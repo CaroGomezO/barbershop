@@ -1,0 +1,36 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: barberia_db
+    environment:
+      POSTGRES_DB: barbershop_db
+      POSTGRES_USER: barberia_user
+      POSTGRES_PASSWORD: barberia_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U barberia_user -d barbershop_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: barberia_app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/barbershop_db
+      SPRING_DATASOURCE_USERNAME: barberia_user
+      SPRING_DATASOURCE_PASSWORD: barberia_pass
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: 86400000
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:
