@@ -145,3 +145,23 @@ INSERT INTO services (name, description, price, duration_minutes) VALUES
 ('Corte + lavado',
  'Corte premium seguido de masaje capilar con shampoo refrescante.',
  20000, 45);
+
+-- Primero verifica que el rol exista
+INSERT INTO roles (name) VALUES ('Administrador') ON CONFLICT DO NOTHING;
+
+-- Inserta el usuario admin
+-- La contraseña en texto plano es: Admin123
+-- El hash fue generado con BCrypt strength 10
+INSERT INTO users (first_name, last_name, email, phone, password_hash, role_id)
+VALUES (
+    'Admin',
+    'Barbería',
+    'admin@barberia.com',
+    '3001234567',
+    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LjTYkRNS7iK',
+    (SELECT id FROM roles WHERE name = 'Administrador')
+);
+
+INSERT INTO administrators (user_id)
+SELECT id FROM users WHERE email = 'admin@barberia.com'
+ON CONFLICT (user_id) DO NOTHING;
