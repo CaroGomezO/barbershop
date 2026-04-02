@@ -1,120 +1,103 @@
--- ============================================================
--- ROLES
--- ============================================================
+-- Roles
 CREATE TABLE roles (
-    id   SERIAL      PRIMARY KEY,
+    id   SERIAL PRIMARY KEY,
     name VARCHAR(20) NOT NULL UNIQUE
 );
 
--- ============================================================
--- USUARIOS (tabla base para todos los perfiles)
--- Cambios:
---   - password renombrado a password_hash (claridad)
---   - se agrega created_at para auditoría
--- ============================================================
+-- Usuarios
 CREATE TABLE users (
-    id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    first_name    VARCHAR(50)  NOT NULL,
-    last_name     VARCHAR(50)  NOT NULL,
-    email         VARCHAR(150) NOT NULL UNIQUE,
-    phone         VARCHAR(15)  NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    role_id       INT          NOT NULL REFERENCES roles(id),
-    created_at    TIMESTAMP    NOT NULL DEFAULT NOW()
+    id                BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    names             VARCHAR(100) NOT NULL,
+    last_names        VARCHAR(100) NOT NULL,
+    document_number   VARCHAR(20)  NOT NULL UNIQUE,
+    birth_date        DATE         NOT NULL,
+    email             VARCHAR(150) NOT NULL UNIQUE,
+    phone             VARCHAR(15)  NOT NULL,
+    password_hash     VARCHAR(255) NOT NULL,
+	must_change_password BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at        TIMESTAMP    NOT NULL DEFAULT NOW()
 );
 
--- ============================================================
--- ADMINISTRADORES
--- ============================================================
+-- Usuarios - Roles (Un barbero puede ser también un cliente)
+CREATE TABLE user_roles (
+    user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
+    role_id INT REFERENCES roles(id) ON DELETE CASCADE,
+    PRIMARY KEY (user_id, role_id)
+);
+
+-- Administradores
 CREATE TABLE administrators (
     id      SERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE
 );
 
--- ============================================================
--- CLIENTES
--- ============================================================
+-- Clientes 
 CREATE TABLE clients (
     id      BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE
 );
 
--- ============================================================
--- SERVICIOS
--- ============================================================
+-- Servicios
 CREATE TABLE services (
-    id               SERIAL       PRIMARY KEY,
+    id               SERIAL PRIMARY KEY,
     name             VARCHAR(100) NOT NULL,
     description      TEXT,
     price            DECIMAL(10,2) NOT NULL,
-    duration_minutes INT           NOT NULL
+    duration_minutes INT NOT NULL
 );
 
--- ============================================================
--- BARBEROS
--- Cambios:
---   - first_login → must_change_password (nombre más claro)
---   - status usa CHECK en lugar de confiar en la app
---   - se agrega created_at para auditoría
---   - id_card más descriptivo que barber_id_card
--- ============================================================
+-- Barberos
 CREATE TABLE barbers (
-    id                   SERIAL       PRIMARY KEY,
-    user_id              BIGINT       NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
-    id_card              VARCHAR(20)  NOT NULL UNIQUE,
+    id                   SERIAL PRIMARY KEY,
+    user_id              BIGINT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
     address              VARCHAR(150) NOT NULL,
-    service_id           INT          NOT NULL REFERENCES services(id),
-    status               VARCHAR(20)  NOT NULL DEFAULT 'ACTIVE'
+    hire_date            DATE NOT NULL,
+    status               VARCHAR(20) NOT NULL DEFAULT 'ACTIVE'
                              CHECK (status IN ('ACTIVE', 'INACTIVE')),
-    must_change_password BOOLEAN      NOT NULL DEFAULT TRUE,
-    created_at           TIMESTAMP    NOT NULL DEFAULT NOW()
+    created_at           TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
--- ============================================================
--- BLOQUES DE DISPONIBILIDAD
--- Cambios:
---   - Se elimina el campo "status" del bloque. Un bloque libre
---     simplemente existe; si tiene una cita asociada, está ocupado.
---     Esto evita inconsistencias entre las dos tablas.
---   - Se agrega UNIQUE (barber_id, block_date, start_time) para
---     evitar duplicados a nivel de BD.
--- ============================================================
+-- Barberos - Servicios (Un barbero puede tener uno o más servicios asociados)
+CREATE TABLE barber_services (
+    barber_id  INT REFERENCES barbers(id) ON DELETE CASCADE,
+    service_id INT REFERENCES services(id) ON DELETE CASCADE,
+    PRIMARY KEY (barber_id, service_id)
+);
+
+-- Bloques de disponibilidad
 CREATE TABLE availability_blocks (
     id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     barber_id  INT    NOT NULL REFERENCES barbers(id) ON DELETE CASCADE,
     block_date DATE   NOT NULL,
     start_time TIME   NOT NULL,
     end_time   TIME   NOT NULL,
-    CONSTRAINT uq_block UNIQUE (barber_id, block_date, start_time)
+    CONSTRAINT uq_block UNIQUE (barber_id, block_date, start_time),
+    CONSTRAINT chk_time CHECK (end_time > start_time)
 );
 
--- ============================================================
--- CITAS
--- Cambios:
---   - Se agrega availability_block_id (FK) para vincular
---     directamente el bloque reservado. Esto permite saber
---     qué bloques están ocupados sin campo "status" en el bloque.
---   - Se agrega status con CHECK para el ciclo de vida de la cita.
---   - Se agrega created_at para auditoría.
---   - appointment_date y appointment_time se pueden derivar del
---     bloque, pero se mantienen por consultas rápidas y legibilidad.
--- ============================================================
+-- Citas
 CREATE TABLE appointments (
     id                    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     client_id             BIGINT NOT NULL REFERENCES clients(id),
     barber_id             INT    NOT NULL REFERENCES barbers(id),
-    service_id            INT    NOT NULL REFERENCES services(id),
     availability_block_id BIGINT NOT NULL UNIQUE REFERENCES availability_blocks(id),
     appointment_date      DATE   NOT NULL,
     appointment_time      TIME   NOT NULL,
+    total_price           DECIMAL(10,2) NOT NULL,
+    total_duration        INT NOT NULL,
     status                VARCHAR(20) NOT NULL DEFAULT 'CONFIRMED'
                               CHECK (status IN ('CONFIRMED', 'CANCELLED', 'MODIFIED')),
     created_at            TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
--- ============================================================
--- ÍNDICES para consultas frecuentes
--- ============================================================
+-- Citas - Servicios (Una cita puede tener uno o más servicios)
+CREATE TABLE appointment_services (
+    appointment_id BIGINT REFERENCES appointments(id) ON DELETE CASCADE,
+    service_id INT REFERENCES services(id),
+    PRIMARY KEY (appointment_id, service_id)
+);
+
+-- Índices
 CREATE INDEX idx_availability_barber_date
     ON availability_blocks (barber_id, block_date);
 
@@ -124,42 +107,47 @@ CREATE INDEX idx_appointments_client
 CREATE INDEX idx_appointments_barber_date
     ON appointments (barber_id, appointment_date);
 
--- ============================================================
--- DATOS INICIALES
--- ============================================================
-INSERT INTO roles (name) VALUES ('Administrador'), ('Barbero'), ('Cliente');
+
+INSERT INTO roles (name) VALUES 
+('ADMINISTRADOR'),
+('BARBERO'),
+('CLIENTE')
+ON CONFLICT (name) DO NOTHING;
 
 INSERT INTO services (name, description, price, duration_minutes) VALUES
-('Corte de cabello',
- 'Degradados perfectos, clásicos o tendencia. Incluye lavado, asesoría según tu tipo de rostro y acabado con ceras.',
- 15000, 30),
-('Arreglo de barba',
- 'Ritual de toalla caliente, perfilado con navaja y aceites hidratantes para una barba suave y alineada.',
- 12000, 20),
-('Corte de cabello + barba',
- 'La experiencia completa. Transformación total con simetría entre cabello y barba.',
- 25000, 60),
-('Perfilado de cejas',
- 'Limpieza y definición natural para resaltar la mirada. El detalle que marca la diferencia.',
- 5000, 15),
-('Corte + lavado',
- 'Corte premium seguido de masaje capilar con shampoo refrescante.',
- 20000, 45);
+('Corte de Cabello Masculino', 'Corte moderno o clásico con asesoría de imagen y acabado con pomada', 15000, 30),
+('Corte con Lavado y Peinado', 'Corte de cabello más lavado profundo con masaje capilar y peinado', 20000, 45),
+('Corte de Cabello Infantil', 'Corte para niños menores de 12 años con paciencia y estilo', 13000, 30),
+('Rapado Uniforme', 'Corte con una sola guía en toda la cabeza (Buzz cut)', 10000, 20),
+('Arreglo de Barba Tradicional', 'Perfilado con navaja, toalla caliente y aplicación de bálsamo hidratante', 12000, 25),
+('Afeitado Completo', 'Afeitado al ras con espuma premium y técnica de toalla caliente', 15000, 30),
+('Perfilado de Cejas', 'Limpieza y diseño de cejas con navaja o pinza', 5000, 15),
+('Pigmentación de Barba', 'Aplicación de pigmento semipermanente para dar densidad a la barba', 18000, 30),
+('Limpieza Facial Express', 'Exfoliación rápida y remoción de impurezas superficiales', 15000, 20),
+('Mascarilla de Carbón Activado', 'Mascarilla negra para eliminación profunda de puntos negros', 12000, 15),
+('Tratamiento de Ojeras', 'Parches de colágeno y masaje vibratorio en la zona ocular', 10000, 15),
+('Exfoliación + Mascarilla Hidratante', 'Combo de limpieza profunda y nutrición de la piel', 22000, 35),
+('Tratamiento Anticaída', 'Aplicación de tónico fortalecedor con masaje estimulante', 25000, 20),
+('Camuflaje de Canas', 'Tinte rápido para disimular canas en cabello de forma natural', 30000, 40),
+('Alisado Keratina Flequillo/Superior', 'Tratamiento para controlar el frizz en la parte superior', 40000, 60);
 
--- Primero verifica que el rol exista
-INSERT INTO roles (name) VALUES ('Administrador') ON CONFLICT DO NOTHING;
-
--- Inserta el usuario admin
 -- La contraseña en texto plano es: Admin123
--- El hash fue generado con BCrypt strength 10
-INSERT INTO users (first_name, last_name, email, phone, password_hash, role_id)
+INSERT INTO users (names, last_names, document_number, birth_date, email, phone, password_hash, must_change_password)
 VALUES (
-    'Admin',
-    'Barbería',
-    'admin@barberia.com',
-    '3001234567',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LjTYkRNS7iK',
-    (SELECT id FROM roles WHERE name = 'Administrador')
+    'Admin', 
+    'Barbería', 
+    '123456789', 
+    '1990-01-01', 
+    'admin@barberia.com', 
+    '3001234567', 
+    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LjTYkRNS7iK', 
+    FALSE
+);
+
+INSERT INTO user_roles (user_id, role_id)
+VALUES (
+    (SELECT id FROM users WHERE email = 'admin@barberia.com'),
+    (SELECT id FROM roles WHERE name = 'ADMINISTRADOR')
 );
 
 INSERT INTO administrators (user_id)
