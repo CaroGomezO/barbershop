@@ -16,6 +16,7 @@ import lombok.Setter;
 public class Employee {
     private Long id;
     private User user;
+    private String documentNumber;
     private String names;
     private String lastNames;
     private String phoneNumber;
