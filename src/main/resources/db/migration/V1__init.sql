@@ -1,120 +1,114 @@
 -- Roles
 CREATE TABLE roles (
-    id   SERIAL PRIMARY KEY,
-    name VARCHAR(20) NOT NULL UNIQUE
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(20) UNIQUE NOT NULL
 );
-
--- Usuarios
-CREATE TABLE users (
-    id                BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    names             VARCHAR(100) NOT NULL,
-    last_names        VARCHAR(100) NOT NULL,
-    document_number   VARCHAR(20)  NOT NULL UNIQUE,
-    birth_date        DATE         NOT NULL,
-    email             VARCHAR(150) NOT NULL UNIQUE,
-    phone             VARCHAR(15)  NOT NULL,
-    password_hash     VARCHAR(255) NOT NULL,
-	must_change_password BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at        TIMESTAMP    NOT NULL DEFAULT NOW()
-);
-
--- Usuarios - Roles (Un barbero puede ser también un cliente)
-CREATE TABLE user_roles (
-    user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
-    role_id INT REFERENCES roles(id) ON DELETE CASCADE,
-    PRIMARY KEY (user_id, role_id)
-);
-
--- Administradores
-CREATE TABLE administrators (
-    id      SERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE
-);
-
--- Clientes 
-CREATE TABLE clients (
-    id      BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    user_id BIGINT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE
-);
-
--- Servicios
-CREATE TABLE services (
-    id               SERIAL PRIMARY KEY,
-    name             VARCHAR(100) NOT NULL,
-    description      TEXT,
-    price            DECIMAL(10,2) NOT NULL,
-    duration_minutes INT NOT NULL
-);
-
--- Barberos
-CREATE TABLE barbers (
-    id                   SERIAL PRIMARY KEY,
-    user_id              BIGINT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
-    address              VARCHAR(150) NOT NULL,
-    hire_date            DATE NOT NULL,
-    status               VARCHAR(20) NOT NULL DEFAULT 'ACTIVE'
-                             CHECK (status IN ('ACTIVE', 'INACTIVE')),
-    created_at           TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
--- Barberos - Servicios (Un barbero puede tener uno o más servicios asociados)
-CREATE TABLE barber_services (
-    barber_id  INT REFERENCES barbers(id) ON DELETE CASCADE,
-    service_id INT REFERENCES services(id) ON DELETE CASCADE,
-    PRIMARY KEY (barber_id, service_id)
-);
-
--- Bloques de disponibilidad
-CREATE TABLE availability_blocks (
-    id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    barber_id  INT    NOT NULL REFERENCES barbers(id) ON DELETE CASCADE,
-    block_date DATE   NOT NULL,
-    start_time TIME   NOT NULL,
-    end_time   TIME   NOT NULL,
-    CONSTRAINT uq_block UNIQUE (barber_id, block_date, start_time),
-    CONSTRAINT chk_time CHECK (end_time > start_time)
-);
-
--- Citas
-CREATE TABLE appointments (
-    id                    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    client_id             BIGINT NOT NULL REFERENCES clients(id),
-    barber_id             INT    NOT NULL REFERENCES barbers(id),
-    availability_block_id BIGINT NOT NULL UNIQUE REFERENCES availability_blocks(id),
-    appointment_date      DATE   NOT NULL,
-    appointment_time      TIME   NOT NULL,
-    total_price           DECIMAL(10,2) NOT NULL,
-    total_duration        INT NOT NULL,
-    status                VARCHAR(20) NOT NULL DEFAULT 'CONFIRMED'
-                              CHECK (status IN ('CONFIRMED', 'CANCELLED', 'MODIFIED')),
-    created_at            TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
--- Citas - Servicios (Una cita puede tener uno o más servicios)
-CREATE TABLE appointment_services (
-    appointment_id BIGINT REFERENCES appointments(id) ON DELETE CASCADE,
-    service_id INT REFERENCES services(id),
-    PRIMARY KEY (appointment_id, service_id)
-);
-
--- Índices
-CREATE INDEX idx_availability_barber_date
-    ON availability_blocks (barber_id, block_date);
-
-CREATE INDEX idx_appointments_client
-    ON appointments (client_id);
-
-CREATE INDEX idx_appointments_barber_date
-    ON appointments (barber_id, appointment_date);
-
 
 INSERT INTO roles (name) VALUES 
 ('ADMINISTRADOR'),
 ('BARBERO'),
-('CLIENTE')
-ON CONFLICT (name) DO NOTHING;
+('CLIENTE');
 
-INSERT INTO services (name, description, price, duration_minutes) VALUES
+-- Usuarios
+CREATE TABLE users (
+    id BIGSERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    hash_password TEXT NOT NULL,
+    role_id INT NOT NULL,
+    is_password_temporary BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_user_role FOREIGN KEY (role_id) REFERENCES roles(id)
+);
+
+-- Clientes
+CREATE TABLE clients (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT UNIQUE NOT NULL,
+    names VARCHAR(100) NOT NULL,
+    last_names VARCHAR(100) NOT NULL,
+    phone VARCHAR(15) NOT NULL,
+
+    CONSTRAINT fk_client_user FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- Empleados
+CREATE TABLE employees (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT UNIQUE NOT NULL,
+    document_number VARCHAR(20) UNIQUE NOT NULL,
+    names VARCHAR(100) NOT NULL,
+    last_names VARCHAR(100) NOT NULL,
+    phone VARCHAR(15) NOT NULL,
+    address VARCHAR(255),
+    is_active BOOLEAN DEFAULT TRUE,
+
+    CONSTRAINT fk_employee_user FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- Servicios
+CREATE TABLE services (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    description TEXT,
+    price NUMERIC(10,2) NOT NULL,
+    duration_minutes INT NOT NULL CHECK (duration_minutes > 0)
+);
+
+-- Servicios por empleado
+CREATE TABLE employee_services (
+    employee_id BIGINT NOT NULL,
+    service_id BIGINT NOT NULL,
+
+    PRIMARY KEY (employee_id, service_id),
+
+    CONSTRAINT fk_es_employee FOREIGN KEY (employee_id) REFERENCES employees(id),
+    CONSTRAINT fk_es_service FOREIGN KEY (service_id) REFERENCES services(id)
+);
+
+-- Disponibilidad de empleados
+CREATE TABLE availability (
+    id BIGSERIAL PRIMARY KEY,
+    employee_id BIGINT NOT NULL,
+    date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+
+    CONSTRAINT fk_av_employee FOREIGN KEY (employee_id) REFERENCES employees(id),
+
+    CONSTRAINT chk_time_range CHECK (start_time < end_time)
+);
+
+-- Citas
+CREATE TABLE appointments (
+    id BIGSERIAL PRIMARY KEY,
+    client_id BIGINT NOT NULL,
+    employee_id BIGINT NOT NULL,
+    date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    status VARCHAR(20) NOT NULL,
+
+    CONSTRAINT fk_app_client FOREIGN KEY (client_id) REFERENCES clients(id),
+    CONSTRAINT fk_app_employee FOREIGN KEY (employee_id) REFERENCES employees(id),
+
+    CONSTRAINT chk_app_time CHECK (start_time < end_time)
+);
+
+-- Servicios por cita
+CREATE TABLE appointment_services (
+    appointment_id BIGINT NOT NULL,
+    service_id BIGINT NOT NULL,
+    price_charged NUMERIC(10,2) NOT NULL,
+    duration_minutes INT NOT NULL,
+
+    PRIMARY KEY (appointment_id, service_id),
+
+    CONSTRAINT fk_as_app FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE CASCADE,
+    CONSTRAINT fk_as_service FOREIGN KEY (service_id) REFERENCES services(id)
+);
+
+INSERT INTO services (name, description, price, duration_minutes) VALUES 
 ('Corte de Cabello Masculino', 'Corte moderno o clásico con asesoría de imagen y acabado con pomada', 15000, 30),
 ('Corte con Lavado y Peinado', 'Corte de cabello más lavado profundo con masaje capilar y peinado', 20000, 45),
 ('Corte de Cabello Infantil', 'Corte para niños menores de 12 años con paciencia y estilo', 13000, 30),
@@ -130,26 +124,3 @@ INSERT INTO services (name, description, price, duration_minutes) VALUES
 ('Tratamiento Anticaída', 'Aplicación de tónico fortalecedor con masaje estimulante', 25000, 20),
 ('Camuflaje de Canas', 'Tinte rápido para disimular canas en cabello de forma natural', 30000, 40),
 ('Alisado Keratina Flequillo/Superior', 'Tratamiento para controlar el frizz en la parte superior', 40000, 60);
-
--- La contraseña en texto plano es: Admin123
-INSERT INTO users (names, last_names, document_number, birth_date, email, phone, password_hash, must_change_password)
-VALUES (
-    'Admin', 
-    'Barbería', 
-    '123456789', 
-    '1990-01-01', 
-    'admin@barberia.com', 
-    '3001234567', 
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LjTYkRNS7iK', 
-    FALSE
-);
-
-INSERT INTO user_roles (user_id, role_id)
-VALUES (
-    (SELECT id FROM users WHERE email = 'admin@barberia.com'),
-    (SELECT id FROM roles WHERE name = 'ADMINISTRADOR')
-);
-
-INSERT INTO administrators (user_id)
-SELECT id FROM users WHERE email = 'admin@barberia.com'
-ON CONFLICT (user_id) DO NOTHING;
