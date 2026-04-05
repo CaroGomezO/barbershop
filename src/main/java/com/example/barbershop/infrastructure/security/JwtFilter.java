@@ -25,23 +25,26 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
-        
-        // Excluir endpoints de Swagger/OpenAPI
-        if (path.startsWith("/swagger-ui") ||
+        return path.startsWith("/swagger-ui") ||
             path.startsWith("/v3/api-docs") ||
             path.startsWith("/swagger-resources") ||
-            path.startsWith("/webjars") ||
-            path.startsWith("/api/auth/")) {
-            return true;
-        }
-        
-        return false;
+            path.startsWith("/webjars");
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain chain)
+            throws ServletException, IOException {
 
+        String path = request.getRequestURI();
         String authHeader = request.getHeader("Authorization");
+
+        // Rutas públicas que no necesitan token
+        if (path.equals("/api/auth/login") || path.equals("/api/auth/register")) {
+            chain.doFilter(request, response);
+            return;
+        }
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             chain.doFilter(request, response);
@@ -56,14 +59,15 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         boolean isPasswordTemporary = jwtService.extractIsPasswordTemporary(token);
-        String path = request.getRequestURI();
 
+        // change-password es el único endpoint permitido con contraseña temporal
         if (isPasswordTemporary && !path.equals("/api/auth/change-password")) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write(
                     "{\"error\":\"Debes cambiar tu contraseña antes de continuar\"}"
             );
+            response.getWriter().flush();
             return;
         }
 
