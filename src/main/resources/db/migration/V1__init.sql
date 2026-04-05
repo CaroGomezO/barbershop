@@ -129,7 +129,7 @@ INSERT INTO services (name, description, price, duration_minutes) VALUES
 INSERT INTO users (email, hash_password, role_id, is_password_temporary)
 VALUES (
     'admin@barberia.com',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LjTYkRNS7iK',
+    '$2b$10$Z22VzltNuKxVUn42VHf6r.pVr5WgyBsqKJEJHvXLFh7fAOP2H4qN2',
     (SELECT id FROM roles WHERE name = 'ADMINISTRADOR'),
     false
 );
