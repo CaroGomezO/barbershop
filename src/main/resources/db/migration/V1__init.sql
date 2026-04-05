@@ -124,3 +124,22 @@ INSERT INTO services (name, description, price, duration_minutes) VALUES
 ('Tratamiento Anticaída', 'Aplicación de tónico fortalecedor con masaje estimulante', 25000, 20),
 ('Camuflaje de Canas', 'Tinte rápido para disimular canas en cabello de forma natural', 30000, 40),
 ('Alisado Keratina Flequillo/Superior', 'Tratamiento para controlar el frizz en la parte superior', 40000, 60);
+
+-- Contraseña: Admin123
+INSERT INTO users (email, hash_password, role_id, is_password_temporary)
+VALUES (
+    'admin@barberia.com',
+    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LjTYkRNS7iK',
+    (SELECT id FROM roles WHERE name = 'ADMINISTRADOR'),
+    false
+);
+
+INSERT INTO employees (user_id, document_number, names, last_names, phone, is_active)
+VALUES (
+    (SELECT id FROM users WHERE email = 'admin@barberia.com'),
+    '000000000',
+    'Admin',
+    'Sistema',
+    '3000000000',
+    true
+);

@@ -219,27 +219,24 @@ public class AppointmentUseCaseImpl implements AppointmentUseCase {
                 .map(s -> s.getPrice())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        Set<AppointmentDetail> appointmentServices = services.stream()
-        .map(s -> {
-            AppointmentDetail detail = AppointmentDetail.builder()
-                    .service(s)
-                    .price(s.getPrice())
-                    .durationMinutes(s.getDurationMinutes())
-                    .build();
-            return detail;
-        })
+        Set<AppointmentDetail> details = services.stream()
+        .map(s -> AppointmentDetail.builder()
+                .service(s)
+                .price(s.getPrice())
+                .durationMinutes(s.getDurationMinutes())
+                .build())
         .collect(Collectors.toSet());
 
-
         Appointment appointment = Appointment.builder()
-                .client(client)
-                .employee(employee)
-                .date(request.getDate())
-                .startTime(request.getStartTime())
-                .endTime(endTime)
-                .status(AppointmentStatus.CONFIRMADA)
-                .details(appointmentServices)
-                .build();
+        .client(client)
+        .employee(employee)
+        .date(request.getDate())
+        .startTime(request.getStartTime())
+        .endTime(endTime)
+        .status(AppointmentStatus.CONFIRMADA) 
+        .totalPrice(totalPrice)
+        .details(details)
+        .build();
 
         Appointment saved = appointmentRepository.save(appointment);
 
