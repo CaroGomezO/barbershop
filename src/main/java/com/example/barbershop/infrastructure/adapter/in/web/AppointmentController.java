@@ -25,6 +25,7 @@ import com.example.barbershop.application.dto.ServiceAvailabilityResponse;
 import com.example.barbershop.application.dto.SlotResponse;
 import com.example.barbershop.application.port.in.AppointmentUseCase;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -63,9 +64,11 @@ public class AppointmentController {
     public ResponseEntity<AppointmentSummaryResponse> getSummary(
             @RequestParam Long employeeId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime startTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME)
+            @Schema(type = "string", format = "time", example = "11:30:00") LocalTime startTime,
             @RequestParam List<Long> serviceIds) {
-        return ResponseEntity.ok(appointmentUseCase.getSummary(employeeId, date, startTime, serviceIds));
+        return ResponseEntity.ok(
+                appointmentUseCase.getSummary(employeeId, date, startTime, serviceIds));
     }
 
     @PostMapping("/confirm")
