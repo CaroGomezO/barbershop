@@ -35,6 +35,6 @@ public class ClientEntity {
     @Column(name = "last_names", nullable = false)
     private String lastNames;
 
-    @Column(nullable = false)
+    @Column(name = "phone", nullable = false)
     private String phoneNumber;
 }

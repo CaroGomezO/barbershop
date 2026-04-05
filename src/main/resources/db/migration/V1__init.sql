@@ -88,6 +88,7 @@ CREATE TABLE appointments (
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
     status VARCHAR(20) NOT NULL,
+    total_price NUMERIC(10,2) NOT NULL DEFAULT 0,
 
     CONSTRAINT fk_app_client FOREIGN KEY (client_id) REFERENCES clients(id),
     CONSTRAINT fk_app_employee FOREIGN KEY (employee_id) REFERENCES employees(id),
@@ -97,12 +98,11 @@ CREATE TABLE appointments (
 
 -- Servicios por cita
 CREATE TABLE appointment_services (
+    id BIGSERIAL PRIMARY KEY,
     appointment_id BIGINT NOT NULL,
     service_id BIGINT NOT NULL,
     price_charged NUMERIC(10,2) NOT NULL,
     duration_minutes INT NOT NULL,
-
-    PRIMARY KEY (appointment_id, service_id),
 
     CONSTRAINT fk_as_app FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE CASCADE,
     CONSTRAINT fk_as_service FOREIGN KEY (service_id) REFERENCES services(id)

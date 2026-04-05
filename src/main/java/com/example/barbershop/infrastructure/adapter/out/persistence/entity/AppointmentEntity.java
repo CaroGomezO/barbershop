@@ -57,8 +57,9 @@ public class AppointmentEntity {
     @Column(nullable = false)
     private AppointmentStatus status;
 
+    @Column(name = "total_price", nullable = false)
+    private BigDecimal totalPrice;
+
     @OneToMany(mappedBy = "appointment", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<AppointmentDetailEntity> details;
-
-    private BigDecimal totalPrice;
 }
