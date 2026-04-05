@@ -26,22 +26,33 @@ public class SecurityConfig {
             .sessionManagement(s -> s
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // Swagger/OpenAPI endpoints - must be first and permitAll
                 .requestMatchers(
-                    "/api/auth/**",
+                    "/swagger-ui.html",
                     "/swagger-ui/**",
-                    "/v3/api-docs/**"
+                    "/v3/api-docs",
+                    "/v3/api-docs/**",
+                    "/swagger-resources",
+                    "/swagger-resources/**",
+                    "/webjars/**"
                 ).permitAll()
+                // Auth endpoints
+                .requestMatchers("/api/auth/**").permitAll()
+                // Public appointment endpoints
                 .requestMatchers(
                     "/api/appointments/services/**",
                     "/api/appointments/employees/**",
                     "/api/appointments/slots/**",
                     "/api/appointments/summary"
                 ).permitAll()
+                // Role-based endpoints
                 .requestMatchers("/api/admin/**").hasRole("ADMINISTRADOR")
                 .requestMatchers("/api/employee/**").hasRole("BARBERO")
                 .requestMatchers("/api/appointments/confirm").hasRole("CLIENTE")
+                // All other requests require authentication
                 .anyRequest().authenticated()
             )
+            // Add JWT filter AFTER security matchers are evaluated
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

@@ -25,3 +25,14 @@ server:
 jwt:
   secret: ${JWT_SECRET:dev-secret-key-minimo-256-bits-para-hs256-algoritmo}
   expiration-ms: ${JWT_EXPIRATION_MS:86400000}   # 24 horas
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    use-root-path: true
+    operations-sorter: method
+    tags-sorter: alpha
+  show-actuator: false
