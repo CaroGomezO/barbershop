@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BarberShop — Sistema de Citas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dark: #8B6914;
+    --black: #0D0D0D;
+    --dark: #1A1A1A;
+    --dark2: #252525;
+    --dark3: #2F2F2F;
+    --gray: #888;
+    --gray-light: #BBBBB7;
+    --white: #F5F3EE;
+    --error: #E24B4A;
+    --success: #1D9E75;
+    --radius: 4px;
+    --radius-lg: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--black);
+    color: var(--white);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  #app { min-height: 100vh; display: flex; flex-direction: column; }
+
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 40px;
+    border-bottom: 1px solid rgba(201,168,76,0.2);
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(13,13,13,0.95);
+    backdrop-filter: blur(10px);
+  }
+  .nav-brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; font-weight: 700;
+    color: var(--gold); letter-spacing: 1px;
+  }
+  .nav-brand span { color: var(--white); }
+  .nav-links { display: flex; gap: 8px; align-items: center; }
+  .btn-nav {
+    background: none; border: none; color: var(--gray-light);
+    font-family: 'DM Sans', sans-serif; font-size: 14px;
+    cursor: pointer; padding: 8px 14px; border-radius: var(--radius);
+    transition: color .2s, background .2s;
+  }
+  .btn-nav:hover { color: var(--white); background: rgba(255,255,255,0.05); }
+  .btn-nav.active { color: var(--gold); }
+  .btn-gold {
+    background: var(--gold); color: var(--black);
+    border: none; font-family: 'DM Sans', sans-serif; font-size: 14px;
+    font-weight: 500; cursor: pointer; padding: 9px 20px;
+    border-radius: var(--radius); transition: background .2s, transform .1s;
+  }
+  .btn-gold:hover { background: var(--gold-light); }
+  .btn-gold:active { transform: scale(0.98); }
+  .btn-outline {
+    background: none; border: 1px solid rgba(201,168,76,0.4);
+    color: var(--gold); font-family: 'DM Sans', sans-serif; font-size: 14px;
+    cursor: pointer; padding: 9px 20px; border-radius: var(--radius);
+    transition: border-color .2s, background .2s;
+  }
+  .btn-outline:hover { border-color: var(--gold); background: rgba(201,168,76,0.08); }
+
+  main { flex: 1; padding: 0 40px 60px; max-width: 1100px; margin: 0 auto; width: 100%; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .hero {
+    text-align: center; padding: 80px 20px 60px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .hero-label {
+    font-size: 12px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(40px, 6vw, 68px); font-weight: 700;
+    line-height: 1.1; margin-bottom: 20px;
+  }
+  .hero h1 em { color: var(--gold); font-style: italic; }
+  .hero p { color: var(--gray-light); font-size: 17px; max-width: 480px; margin: 0 auto 36px; }
+  .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  .section-header { padding: 48px 0 28px; }
+  .section-header h2 { font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 600; }
+  .section-header h2 span { color: var(--gold); }
+  .section-header p { color: var(--gray-light); margin-top: 6px; }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--dark2);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    transition: border-color .2s, transform .15s;
+    position: relative;
+  }
+  .card:hover { border-color: rgba(201,168,76,0.3); transform: translateY(-2px); }
+  .card-badge {
+    display: inline-block; font-size: 11px; letter-spacing: 1px;
+    text-transform: uppercase; padding: 3px 10px;
+    border-radius: 30px; margin-bottom: 12px;
+  }
+  .badge-avail { background: rgba(29,158,117,0.15); color: var(--success); }
+  .badge-unavail { background: rgba(136,136,136,0.15); color: var(--gray); }
+  .badge-gold { background: rgba(201,168,76,0.15); color: var(--gold); }
+  .badge-pending { background: rgba(239,159,39,0.15); color: #EF9F27; }
+
+  .card h3 { font-family: 'Playfair Display', serif; font-size: 19px; font-weight: 600; margin-bottom: 8px; }
+  .card .card-desc { font-size: 13px; color: var(--gray-light); margin-bottom: 14px; line-height: 1.5; }
+  .card .card-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .card .price { font-size: 20px; font-weight: 500; color: var(--gold); }
+  .card .duration { font-size: 13px; color: var(--gray); }
+
+  .wizard { max-width: 680px; margin: 0 auto; }
+  .wizard-steps {
+    display: flex; gap: 0; margin-bottom: 36px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding-bottom: 20px;
+  }
+  .step-dot {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--gray); flex: 1;
+  }
+  .step-dot .dot {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 500;
+    border: 1px solid rgba(255,255,255,0.15); flex-shrink: 0;
+  }
+  .step-dot.done .dot { background: var(--gold); color: var(--black); border-color: var(--gold); }
+  .step-dot.active .dot { border-color: var(--gold); color: var(--gold); }
+  .step-dot.active { color: var(--white); }
+  .step-dot.done { color: var(--gray-light); }
+
+  .step-panel { display: none; }
+  .step-panel.active { display: block; }
+
+  .form-card {
+    background: var(--dark2);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    max-width: 480px; margin: 0 auto;
+  }
+  .form-card h2 { font-family: 'Playfair Display', serif; font-size: 24px; margin-bottom: 6px; }
+  .form-card .subtitle { color: var(--gray-light); font-size: 14px; margin-bottom: 28px; }
+
+  .field { margin-bottom: 18px; }
+  .field label { display: block; font-size: 13px; color: var(--gray-light); margin-bottom: 6px; letter-spacing: 0.3px; }
+  .field input, .field select {
+    width: 100%; background: var(--dark3);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--white); font-family: 'DM Sans', sans-serif;
+    font-size: 14px; padding: 10px 14px;
+    border-radius: var(--radius); outline: none;
+    transition: border-color .2s; appearance: none;
+  }
+  .field input:focus, .field select:focus { border-color: var(--gold); }
+  .field input::placeholder { color: var(--gray); }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .form-error {
+    background: rgba(226,75,74,0.1); border: 1px solid rgba(226,75,74,0.3);
+    color: #F09595; font-size: 13px; padding: 10px 14px;
+    border-radius: var(--radius); margin-bottom: 16px; display: none;
+  }
+  .form-success {
+    background: rgba(29,158,117,0.1); border: 1px solid rgba(29,158,117,0.3);
+    color: #5DCAA5; font-size: 13px; padding: 10px 14px;
+    border-radius: var(--radius); margin-bottom: 16px; display: none;
+  }
+
+  .btn-full { width: 100%; padding: 12px; font-size: 15px; margin-top: 8px; }
+
+  .form-link { text-align: center; margin-top: 20px; font-size: 13px; color: var(--gray); }
+  .form-link a { color: var(--gold); cursor: pointer; text-decoration: none; }
+  .form-link a:hover { text-decoration: underline; }
+
+  .dates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 8px; margin: 16px 0;
+  }
+  .date-btn {
+    background: var(--dark3); border: 1px solid rgba(255,255,255,0.08);
+    color: var(--white); font-family: 'DM Sans', sans-serif;
+    font-size: 13px; padding: 10px 8px; border-radius: var(--radius);
+    cursor: pointer; text-align: center; transition: all .2s;
+  }
+  .date-btn:hover { border-color: rgba(201,168,76,0.4); }
+  .date-btn.selected { background: var(--gold); color: var(--black); border-color: var(--gold); font-weight: 500; }
+
+  .slots-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 8px; margin: 16px 0;
+  }
+  .slot-btn {
+    background: var(--dark3); border: 1px solid rgba(255,255,255,0.08);
+    color: var(--white); font-family: 'DM Sans', sans-serif;
+    font-size: 13px; padding: 10px; border-radius: var(--radius);
+    cursor: pointer; text-align: center; transition: all .2s;
+  }
+  .slot-btn:hover { border-color: rgba(201,168,76,0.4); }
+  .slot-btn.selected { background: var(--gold); color: var(--black); border-color: var(--gold); font-weight: 500; }
+
+  .summary-box {
+    background: var(--dark2); border: 1px solid rgba(201,168,76,0.2);
+    border-radius: var(--radius-lg); padding: 24px; margin-top: 24px;
+  }
+  .summary-box h3 { font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 16px; color: var(--gold); }
+  .summary-row {
+    display: flex; justify-content: space-between;
+    font-size: 14px; padding: 7px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .summary-row:last-child { border: none; }
+  .summary-row .label { color: var(--gray-light); }
+  .summary-row .val { font-weight: 500; }
+  .summary-total { font-size: 22px !important; color: var(--gold); }
+
+  .spinner {
+    display: inline-block; width: 18px; height: 18px;
+    border: 2px solid rgba(201,168,76,0.3);
+    border-top-color: var(--gold);
+    border-radius: 50%; animation: spin .7s linear infinite;
+    vertical-align: middle; margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-state { text-align: center; padding: 48px; color: var(--gray); }
+
+  .profile-header {
+    display: flex; align-items: center; gap: 20px;
+    padding: 40px 0 30px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 28px;
+  }
+  .avatar {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: rgba(201,168,76,0.15);
+    border: 2px solid rgba(201,168,76,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; color: var(--gold); flex-shrink: 0;
+  }
+  .profile-info h2 { font-family: 'Playfair Display', serif; font-size: 22px; }
+  .profile-info p { color: var(--gray-light); font-size: 14px; margin-top: 2px; }
+  .role-badge {
+    display: inline-block; font-size: 11px; letter-spacing: 1px;
+    text-transform: uppercase; padding: 3px 10px;
+    border-radius: 30px; margin-left: 8px; vertical-align: middle;
+    background: rgba(201,168,76,0.15); color: var(--gold);
+  }
+
+  #toast {
+    position: fixed; bottom: 28px; right: 28px;
+    background: var(--dark3); border: 1px solid rgba(255,255,255,0.1);
+    color: var(--white); padding: 12px 18px;
+    border-radius: var(--radius-lg); font-size: 14px;
+    transform: translateY(80px); opacity: 0;
+    transition: all .3s ease; z-index: 9999; max-width: 340px;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  #toast.success { border-color: rgba(29,158,117,0.4); }
+  #toast.error { border-color: rgba(226,75,74,0.4); }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: var(--black); }
+  ::-webkit-scrollbar-thumb { background: var(--dark3); border-radius: 3px; }
+
+  @media (max-width: 640px) {
+    nav { padding: 16px 20px; }
+    main { padding: 0 20px 48px; }
+    .hero { padding: 48px 10px 40px; }
+    .form-card { padding: 24px; }
+    .field-row { grid-template-columns: 1fr; }
+    .wizard-steps { overflow-x: auto; }
+    .step-dot span { display: none; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .page.active { animation: fadeUp .3s ease forwards; }
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">Barber<span>Shop</span></div>
+  <div class="nav-links" id="navLinks">
+    <button class="btn-nav active" onclick="showPage('home')">Inicio</button>
+    <button class="btn-nav" onclick="showPage('booking')" id="btnBooking">Reservar</button>
+    <button class="btn-nav" id="btnLogin" onclick="showPage('login')">Ingresar</button>
+    <button class="btn-gold" id="btnRegisterNav" onclick="showPage('register')">Registrarse</button>
+    <!-- Visibles solo cuando hay sesión -->
+    <button class="btn-nav" id="btnProfile" style="display:none" onclick="showPage('profile')">Mi perfil</button>
+    <button class="btn-nav" id="btnAdmin"    style="display:none" onclick="showPage('admin')">Admin</button>
+    <button class="btn-nav" id="btnEmployee" style="display:none" onclick="showPage('employee')">Empleado</button>
+    <button class="btn-outline" id="btnLogout" style="display:none" onclick="logout()">Salir</button>
+  </div>
+</nav>
+
+<main>
+
+  <!-- HOME -->
+  <div class="page active" id="pageHome">
+    <div class="hero">
+      <p class="hero-label">Bienvenido</p>
+      <h1>El Arte del<br/><em>Buen Corte</em></h1>
+      <p>Reserva tu cita con los mejores barberos. Elige tu servicio, tu profesional y el horario que más te convenga.</p>
+      <div class="hero-actions">
+        <button class="btn-gold" style="padding:12px 32px;font-size:15px" onclick="showPage('booking')">Reservar cita</button>
+        <button class="btn-outline" style="padding:12px 28px;font-size:15px" onclick="showPage('login')">Ingresar</button>
+      </div>
+    </div>
+    <div class="section-header">
+      <h2>Nuestros <span>servicios</span></h2>
+      <p>Selecciona los servicios que deseas para tu próxima cita</p>
+    </div>
+    <div id="homeServices">
+      <div class="loading-state"><span class="spinner"></span> Cargando servicios...</div>
+    </div>
+  </div>
+
+  <!-- BOOKING WIZARD -->
+  <div class="page" id="pageBooking">
+    <div class="section-header">
+      <h2>Reservar <span>cita</span></h2>
+    </div>
+    <div class="wizard">
+      <div class="wizard-steps">
+        <div class="step-dot active" id="step1"><div class="dot">1</div><span>Servicios</span></div>
+        <div class="step-dot" id="step2"><div class="dot">2</div><span>Barbero</span></div>
+        <div class="step-dot" id="step3"><div class="dot">3</div><span>Fecha</span></div>
+        <div class="step-dot" id="step4"><div class="dot">4</div><span>Horario</span></div>
+        <div class="step-dot" id="step5"><div class="dot">5</div><span>Confirmar</span></div>
+      </div>
+
+      <!-- Step 1 -->
+      <div class="step-panel active" id="panel1">
+        <h3 style="font-family:'Playfair Display',serif;margin-bottom:6px">Elige tus servicios</h3>
+        <p style="color:var(--gray-light);font-size:14px;margin-bottom:20px">Puedes seleccionar uno o más servicios</p>
+        <div id="bookingServices"><div class="loading-state"><span class="spinner"></span> Cargando...</div></div>
+        <div style="margin-top:20px;text-align:right">
+          <button class="btn-gold" onclick="goStep(2)">Continuar</button>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step-panel" id="panel2">
+        <h3 style="font-family:'Playfair Display',serif;margin-bottom:6px">Elige tu barbero</h3>
+        <p style="color:var(--gray-light);font-size:14px;margin-bottom:20px">Barberos disponibles para los servicios seleccionados</p>
+        <div id="bookingEmployees"><div class="loading-state"><span class="spinner"></span> Cargando...</div></div>
+        <div style="margin-top:20px;display:flex;gap:10px;justify-content:space-between">
+          <button class="btn-outline" onclick="goStep(1)">Atrás</button>
+          <button class="btn-gold" onclick="goStep(3)">Continuar</button>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step-panel" id="panel3">
+        <h3 style="font-family:'Playfair Display',serif;margin-bottom:6px">Elige una fecha</h3>
+        <p style="color:var(--gray-light);font-size:14px;margin-bottom:20px">Fechas disponibles para el barbero seleccionado</p>
+        <div id="bookingDates"><div class="loading-state"><span class="spinner"></span> Cargando...</div></div>
+        <div style="margin-top:20px;display:flex;gap:10px;justify-content:space-between">
+          <button class="btn-outline" onclick="goStep(2)">Atrás</button>
+          <button class="btn-gold" onclick="goStep(4)">Continuar</button>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="step-panel" id="panel4">
+        <h3 style="font-family:'Playfair Display',serif;margin-bottom:6px">Elige un horario</h3>
+        <p style="color:var(--gray-light);font-size:14px;margin-bottom:20px">Slots disponibles para la fecha seleccionada</p>
+        <div id="bookingSlots"><div class="loading-state"><span class="spinner"></span> Cargando...</div></div>
+        <div style="margin-top:20px;display:flex;gap:10px;justify-content:space-between">
+          <button class="btn-outline" onclick="goStep(3)">Atrás</button>
+          <button class="btn-gold" onclick="goStep(5)">Continuar</button>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="step-panel" id="panel5">
+        <h3 style="font-family:'Playfair Display',serif;margin-bottom:6px">Resumen de tu cita</h3>
+        <p style="color:var(--gray-light);font-size:14px;margin-bottom:20px">Revisa los detalles antes de confirmar</p>
+        <div id="bookingSummary"><div class="loading-state"><span class="spinner"></span> Calculando...</div></div>
+        <div id="confirmError" class="form-error"></div>
+        <div style="margin-top:20px;display:flex;gap:10px;justify-content:space-between">
+          <button class="btn-outline" onclick="goStep(4)">Atrás</button>
+          <button class="btn-gold" id="btnConfirm" onclick="confirmAppointment()">Confirmar cita</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="page" id="pageLogin">
+    <div style="padding:48px 0 20px">
+      <div class="form-card">
+        <h2>Bienvenido</h2>
+        <p class="subtitle">Ingresa con tu cuenta para gestionar tus citas</p>
+        <div id="loginError" class="form-error"></div>
+        <div class="field">
+          <label>Correo electrónico</label>
+          <input type="email" id="loginEmail" placeholder="tu@correo.com" />
+        </div>
+        <div class="field">
+          <label>Contraseña</label>
+          <input type="password" id="loginPass" placeholder="••••••••"
+                 onkeydown="if(event.key==='Enter')doLogin()" />
+        </div>
+        <button class="btn-gold btn-full" onclick="doLogin()">Ingresar</button>
+        <div class="form-link">¿No tienes cuenta? <a onclick="showPage('register')">Regístrate aquí</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTER -->
+  <div class="page" id="pageRegister">
+    <div style="padding:48px 0 20px">
+      <div class="form-card">
+        <h2>Crear cuenta</h2>
+        <p class="subtitle">Únete y reserva tus citas fácilmente</p>
+        <div id="regError" class="form-error"></div>
+        <div id="regSuccess" class="form-success"></div>
+        <div class="field-row">
+          <div class="field"><label>Nombres</label><input type="text" id="regNames" placeholder="Juan" /></div>
+          <div class="field"><label>Apellidos</label><input type="text" id="regLastNames" placeholder="Pérez" /></div>
+        </div>
+        <div class="field">
+          <label>Correo electrónico</label>
+          <input type="email" id="regEmail" placeholder="tu@correo.com" />
+        </div>
+        <div class="field">
+          <label>Teléfono</label>
+          <input type="tel" id="regPhone" placeholder="3001234567" />
+        </div>
+        <div class="field">
+          <label>Contraseña</label>
+          <input type="password" id="regPass" placeholder="Mín. 6 caracteres" />
+        </div>
+        <div class="field">
+          <label>Confirmar contraseña</label>
+          <input type="password" id="regConfirmPass" placeholder="Repite tu contraseña" />
+        </div>
+        <button class="btn-gold btn-full" onclick="doRegister()">Crear cuenta</button>
+        <div class="form-link">¿Ya tienes cuenta? <a onclick="showPage('login')">Ingresar</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="page" id="pageProfile">
+    <div class="profile-header">
+      <div class="avatar" id="profileAvatar">?</div>
+      <div class="profile-info">
+        <h2 id="profileName">—</h2>
+        <p id="profileEmail">—</p>
+      </div>
+    </div>
+    <div class="form-card" style="max-width:420px;margin:0">
+      <h2 style="font-size:20px;margin-bottom:4px">Cambiar contraseña</h2>
+      <p class="subtitle">Actualiza tu contraseña de acceso</p>
+      <div id="pwdError" class="form-error"></div>
+      <div id="pwdSuccess" class="form-success"></div>
+      <div class="field"><label>Contraseña actual</label><input type="password" id="pwdCurrent" placeholder="••••••••" /></div>
+      <div class="field"><label>Nueva contraseña</label><input type="password" id="pwdNew" placeholder="••••••••" /></div>
+      <div class="field"><label>Confirmar nueva contraseña</label><input type="password" id="pwdConfirm" placeholder="••••••••" /></div>
+      <button class="btn-gold btn-full" onclick="doChangePassword()">Actualizar contraseña</button>
+    </div>
+  </div>
+
+  <!-- ADMIN -->
+  <div class="page" id="pageAdmin">
+    <div class="section-header">
+      <h2>Panel <span>Admin</span></h2>
+      <p>Gestión de empleados y servicios</p>
+    </div>
+    <div class="form-card" style="max-width:560px;margin:0">
+      <h2 style="font-size:20px;margin-bottom:4px">Registrar barbero</h2>
+      <p class="subtitle">Agrega un nuevo empleado al equipo</p>
+      <div id="adminError" class="form-error"></div>
+      <div id="adminSuccess" class="form-success"></div>
+      <div class="field-row">
+        <div class="field"><label>Nombres</label><input type="text" id="empNames" placeholder="Juan" /></div>
+        <div class="field"><label>Apellidos</label><input type="text" id="empLastNames" placeholder="García" /></div>
+      </div>
+      <div class="field"><label>Correo electrónico</label><input type="email" id="empEmail" placeholder="barbero@shop.com" /></div>
+      <div class="field-row">
+        <div class="field"><label>Documento</label><input type="text" id="empDoc" placeholder="123456789" /></div>
+        <div class="field"><label>Teléfono</label><input type="tel" id="empPhone" placeholder="3001234567" /></div>
+      </div>
+      <div class="field"><label>Dirección</label><input type="text" id="empAddress" placeholder="Calle 10 #25-40" /></div>
+      <div class="field"><label>Contraseña temporal</label><input type="password" id="empPass" placeholder="Mín. 6 caracteres" /></div>
+      <div class="field"><label>IDs de servicios (separados por coma)</label><input type="text" id="empServices" placeholder="1, 2, 3" /></div>
+      <button class="btn-gold btn-full" onclick="doRegisterEmployee()">Registrar empleado</button>
+    </div>
+  </div>
+
+  <!-- EMPLOYEE -->
+  <div class="page" id="pageEmployee">
+    <div class="section-header">
+      <h2>Portal <span>Empleado</span></h2>
+      <p>Configura tu disponibilidad semanal</p>
+    </div>
+    <div class="form-card" style="max-width:480px;margin:0">
+      <h2 style="font-size:20px;margin-bottom:4px">Agregar disponibilidad</h2>
+      <p class="subtitle">Define tu horario de trabajo para los próximos días</p>
+      <div id="availError" class="form-error"></div>
+      <div id="availSuccess" class="form-success"></div>
+      <div id="availDays"></div>
+      <button class="btn-outline" style="width:100%;margin-bottom:16px" onclick="addAvailDay()">+ Agregar día</button>
+      <button class="btn-gold btn-full" onclick="doSetAvailability()">Guardar disponibilidad</button>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ─── Configuración ────────────────────────────────────────────────────────────
+// Cambia esta URL si tu backend corre en otro puerto o host
+const API = 'http://localhost:8080';
+
+// Roles tal como los devuelve el backend (enum Role del dominio)
+const ROLE_ADMIN    = 'ADMINISTRADOR';
+const ROLE_EMPLOYEE = 'BARBERO';
+const ROLE_CLIENT   = 'CLIENTE';
+
+// ─── Estado global ────────────────────────────────────────────────────────────
+let token = localStorage.getItem('bs_token') || null;
+let user  = JSON.parse(localStorage.getItem('bs_user') || 'null');
+
+const booking = { serviceIds: [], employeeId: null, date: null, startTime: null };
+
+// ─── Llamadas al API ─────────────────────────────────────────────────────────
+async function api(method, path, body) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json' }
+  };
+  if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+  if (body)  opts.body = JSON.stringify(body);
+
+  const r = await fetch(API + path, opts);
+  const text = await r.text();
+  let data;
+  try { data = JSON.parse(text); } catch { data = { message: text }; }
+  if (!r.ok) throw data;
+  return data;
+}
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+function toast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + type;
+  setTimeout(() => t.className = '', 3500);
+}
+
+// ─── Páginas ──────────────────────────────────────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page' + id[0].toUpperCase() + id.slice(1)).classList.add('active');
+
+  document.querySelectorAll('.btn-nav').forEach(b => b.classList.remove('active'));
+  const labels = { home:'Inicio', booking:'Reservar', login:'Ingresar', profile:'Mi perfil', admin:'Admin', employee:'Empleado' };
+  document.querySelectorAll('.btn-nav').forEach(b => {
+    if (b.textContent.trim() === labels[id]) b.classList.add('active');
+  });
+
+  if (id === 'home')    loadHomeServices();
+  if (id === 'booking') { resetBooking(); loadBookingServices(); }
+  if (id === 'employee') renderAvailDays();
+}
+
+// ─── Nav según sesión ─────────────────────────────────────────────────────────
+function updateNav() {
+  const loggedIn = !!token;
+  const role = user?.role || '';
+
+  document.getElementById('btnLogin').style.display      = loggedIn ? 'none' : '';
+  document.getElementById('btnRegisterNav').style.display = loggedIn ? 'none' : '';
+  document.getElementById('btnProfile').style.display    = loggedIn ? '' : 'none';
+  document.getElementById('btnLogout').style.display     = loggedIn ? '' : 'none';
+
+  // Botones de rol — usan los valores exactos del enum Role del backend
+  document.getElementById('btnAdmin').style.display    = role === ROLE_ADMIN    ? '' : 'none';
+  document.getElementById('btnEmployee').style.display = role === ROLE_EMPLOYEE ? '' : 'none';
+
+  if (loggedIn && user) {
+    const initials = ((user.names || '?')[0] || '?').toUpperCase();
+    document.getElementById('profileAvatar').textContent = initials;
+    document.getElementById('profileName').innerHTML =
+      (user.names || '—') + '<span class="role-badge">' + role + '</span>';
+    document.getElementById('profileEmail').textContent = user.email || '';
+  }
+}
+
+function logout() {
+  token = null; user = null;
+  localStorage.removeItem('bs_token');
+  localStorage.removeItem('bs_user');
+  updateNav();
+  showPage('home');
+  toast('Sesión cerrada');
+}
+
+// ─── LOGIN ────────────────────────────────────────────────────────────────────
+async function doLogin() {
+  const email    = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPass').value;
+  const errEl    = document.getElementById('loginError');
+  errEl.style.display = 'none';
+
+  try {
+    // El backend devuelve: { token, role, names, isPasswordTemporary }
+    const data = await api('POST', '/api/auth/login', { email, password });
+    token = data.token;
+    user  = { names: data.names, role: data.role, email };
+    localStorage.setItem('bs_token', token);
+    localStorage.setItem('bs_user', JSON.stringify(user));
+    updateNav();
+    toast('¡Bienvenido ' + data.names + '!', 'success');
+
+    if (data.passwordTemporary || data.isPasswordTemporary) {
+      toast('Tu contraseña es temporal. Por favor cámbiala.', '');
+      showPage('profile');
+    } else {
+      showPage('home');
+    }
+  } catch (e) {
+    errEl.textContent = e.message || 'Credenciales inválidas';
+    errEl.style.display = 'block';
+  }
+}
+
+// ─── REGISTRO ─────────────────────────────────────────────────────────────────
+async function doRegister() {
+  const errEl = document.getElementById('regError');
+  const sucEl = document.getElementById('regSuccess');
+  errEl.style.display = 'none'; sucEl.style.display = 'none';
+
+  const body = {
+    email:           document.getElementById('regEmail').value.trim(),
+    password:        document.getElementById('regPass').value,
+    confirmPassword: document.getElementById('regConfirmPass').value,
+    names:           document.getElementById('regNames').value.trim(),
+    lastNames:       document.getElementById('regLastNames').value.trim(),
+    phoneNumber:     document.getElementById('regPhone').value.trim()
+  };
+
+  try {
+    // El backend devuelve: { token, names, message }
+    const data = await api('POST', '/api/auth/register', body);
+    token = data.token;
+    user  = { names: data.names, role: ROLE_CLIENT, email: body.email };
+    localStorage.setItem('bs_token', token);
+    localStorage.setItem('bs_user', JSON.stringify(user));
+    updateNav();
+    sucEl.textContent = '¡Cuenta creada! ' + (data.message || '');
+    sucEl.style.display = 'block';
+    toast('Cuenta creada exitosamente', 'success');
+    setTimeout(() => showPage('home'), 1500);
+  } catch (e) {
+    const msg = e.message || (Array.isArray(e) ? e.join(', ') : JSON.stringify(e));
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+  }
+}
+
+// ─── CAMBIAR CONTRASEÑA ───────────────────────────────────────────────────────
+async function doChangePassword() {
+  const errEl = document.getElementById('pwdError');
+  const sucEl = document.getElementById('pwdSuccess');
+  errEl.style.display = 'none'; sucEl.style.display = 'none';
+
+  try {
+    await api('POST', '/api/auth/change-password', {
+      currentPassword: document.getElementById('pwdCurrent').value,
+      newPassword:     document.getElementById('pwdNew').value,
+      confirmPassword: document.getElementById('pwdConfirm').value
+    });
+    sucEl.textContent = 'Contraseña actualizada correctamente';
+    sucEl.style.display = 'block';
+    document.getElementById('pwdCurrent').value = '';
+    document.getElementById('pwdNew').value = '';
+    document.getElementById('pwdConfirm').value = '';
+  } catch (e) {
+    errEl.textContent = e.message || 'Error al cambiar contraseña';
+    errEl.style.display = 'block';
+  }
+}
+
+// ─── ADMIN: Registrar empleado ────────────────────────────────────────────────
+async function doRegisterEmployee() {
+  const errEl = document.getElementById('adminError');
+  const sucEl = document.getElementById('adminSuccess');
+  errEl.style.display = 'none'; sucEl.style.display = 'none';
+
+  const serviceIds = document.getElementById('empServices').value
+    .split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+
+  try {
+    const data = await api('POST', '/api/admin/employees', {
+      email:          document.getElementById('empEmail').value.trim(),
+      password:       document.getElementById('empPass').value,
+      documentNumber: document.getElementById('empDoc').value.trim(),
+      names:          document.getElementById('empNames').value.trim(),
+      lastNames:      document.getElementById('empLastNames').value.trim(),
+      phoneNumber:    document.getElementById('empPhone').value.trim(),
+      address:        document.getElementById('empAddress').value.trim(),
+      serviceIds
+    });
+    sucEl.textContent = 'Empleado "' + data.names + ' ' + data.lastNames + '" registrado correctamente';
+    sucEl.style.display = 'block';
+    toast('Empleado registrado', 'success');
+  } catch (e) {
+    errEl.textContent = e.message || 'Error al registrar empleado';
+    errEl.style.display = 'block';
+  }
+}
+
+// ─── EMPLEADO: Disponibilidad ─────────────────────────────────────────────────
+let availDays = [];
+
+function renderAvailDays() {
+  if (availDays.length === 0) availDays = [{}];
+  const el = document.getElementById('availDays');
+  el.innerHTML = availDays.map((d, i) => `
+    <div style="background:var(--dark3);border:1px solid rgba(255,255,255,0.06);border-radius:var(--radius);padding:16px;margin-bottom:12px;position:relative">
+      <button onclick="removeAvailDay(${i})" style="position:absolute;top:10px;right:12px;background:none;border:none;color:var(--gray);font-size:18px;cursor:pointer">×</button>
+      <div class="field"><label>Fecha</label>
+        <input type="date" id="availDate${i}" value="${d.date||''}" min="${new Date().toISOString().split('T')[0]}" />
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Hora inicio</label><input type="time" id="availStart${i}" value="${d.startTime||''}" /></div>
+        <div class="field"><label>Hora fin</label><input type="time" id="availEnd${i}" value="${d.endTime||''}" /></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addAvailDay()       { availDays.push({}); renderAvailDays(); }
+function removeAvailDay(i)   { availDays.splice(i, 1); if (!availDays.length) availDays.push({}); renderAvailDays(); }
+
+async function doSetAvailability() {
+  const errEl = document.getElementById('availError');
+  const sucEl = document.getElementById('availSuccess');
+  errEl.style.display = 'none'; sucEl.style.display = 'none';
+
+  const days = availDays.map((_, i) => ({
+    date:      document.getElementById('availDate'  + i).value,
+    startTime: document.getElementById('availStart' + i).value + ':00',
+    endTime:   document.getElementById('availEnd'   + i).value + ':00'
+  }));
+
+  try {
+    const data = await api('POST', '/api/employee/availability', { days });
+    sucEl.textContent = data.length + ' día(s) de disponibilidad guardados';
+    sucEl.style.display = 'block';
+    availDays = [{}]; renderAvailDays();
+    toast('Disponibilidad actualizada', 'success');
+  } catch (e) {
+    errEl.textContent = e.message || 'Error al guardar disponibilidad';
+    errEl.style.display = 'block';
+  }
+}
+
+// ─── HOME: Servicios ──────────────────────────────────────────────────────────
+async function loadHomeServices() {
+  const el = document.getElementById('homeServices');
+  try {
+    const services = await api('GET', '/api/appointments/services');
+    el.innerHTML = '<div class="cards-grid">' + services.map(s => `
+      <div class="card">
+        <span class="card-badge ${s.available ? 'badge-avail' : 'badge-unavail'}">${s.available ? 'Disponible' : 'No disponible'}</span>
+        <h3>${s.name}</h3>
+        <p class="card-desc">${s.description || 'Servicio profesional de barbería'}</p>
+        <div class="card-meta">
+          <span class="price">$${parseFloat(s.price).toLocaleString('es-CO')}</span>
+          <span class="duration">${s.durationMinutes} min</span>
+        </div>
+      </div>
+    `).join('') + '</div>';
+  } catch (e) {
+    el.innerHTML = '<div class="loading-state" style="color:var(--error)">No se pudieron cargar los servicios. Verifica que el backend esté corriendo en ' + API + '</div>';
+  }
+}
+
+// ─── BOOKING ──────────────────────────────────────────────────────────────────
+function resetBooking() {
+  booking.serviceIds = []; booking.employeeId = null;
+  booking.date = null;     booking.startTime  = null;
+}
+
+async function loadBookingServices() {
+  const el = document.getElementById('bookingServices');
+  try {
+    const services = await api('GET', '/api/appointments/services');
+    el.innerHTML = '<div class="cards-grid">' + services.filter(s => s.available).map(s => `
+      <div class="card" id="svc${s.id}" onclick="toggleService(${s.id}, this)" style="cursor:pointer">
+        <h3>${s.name}</h3>
+        <p class="card-desc">${s.description || ''}</p>
+        <div class="card-meta">
+          <span class="price">$${parseFloat(s.price).toLocaleString('es-CO')}</span>
+          <span class="duration">${s.durationMinutes} min</span>
+        </div>
+      </div>
+    `).join('') + '</div>';
+  } catch (e) {
+    el.innerHTML = '<p style="color:var(--error)">Error cargando servicios</p>';
+  }
+}
+
+function toggleService(id, el) {
+  const idx = booking.serviceIds.indexOf(id);
+  if (idx > -1) {
+    booking.serviceIds.splice(idx, 1);
+    el.style.borderColor = ''; el.style.background = '';
+  } else {
+    booking.serviceIds.push(id);
+    el.style.borderColor = 'rgba(201,168,76,0.7)';
+    el.style.background  = 'rgba(201,168,76,0.06)';
+  }
+}
+
+async function loadBookingEmployees() {
+  const el = document.getElementById('bookingEmployees');
+  if (!booking.serviceIds.length) {
+    el.innerHTML = '<p style="color:var(--error)">Selecciona al menos un servicio primero</p>'; return;
+  }
+  el.innerHTML = '<div class="loading-state"><span class="spinner"></span> Cargando...</div>';
+  try {
+    const employees = await api('GET', '/api/appointments/services/' + booking.serviceIds[0] + '/employees');
+    if (!employees.length) {
+      el.innerHTML = '<p style="color:var(--gray)">No hay barberos disponibles para estos servicios</p>'; return;
+    }
+    el.innerHTML = '<div class="cards-grid">' + employees.map(e => `
+      <div class="card" id="emp${e.id}" onclick="selectEmployee(${e.id}, this)" style="cursor:pointer">
+        <div style="width:48px;height:48px;border-radius:50%;background:rgba(201,168,76,0.15);border:2px solid rgba(201,168,76,0.3);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:18px;color:var(--gold);margin-bottom:12px">
+          ${((e.names||'?')[0]).toUpperCase()}
+        </div>
+        <h3>${e.names} ${e.lastNames}</h3>
+        <p class="card-desc" style="font-size:12px">${(e.services||[]).join(' · ')}</p>
+      </div>
+    `).join('') + '</div>';
+  } catch (e2) {
+    el.innerHTML = '<p style="color:var(--error)">Error cargando barberos</p>';
+  }
+}
+
+function selectEmployee(id, el) {
+  booking.employeeId = id;
+  document.querySelectorAll('[id^="emp"]').forEach(c => { c.style.borderColor = ''; c.style.background = ''; });
+  el.style.borderColor = 'rgba(201,168,76,0.7)';
+  el.style.background  = 'rgba(201,168,76,0.06)';
+}
+
+async function loadBookingDates() {
+  const el = document.getElementById('bookingDates');
+  if (!booking.employeeId) {
+    el.innerHTML = '<p style="color:var(--error)">Selecciona un barbero primero</p>'; return;
+  }
+  el.innerHTML = '<div class="loading-state"><span class="spinner"></span> Cargando...</div>';
+  try {
+    const data  = await api('GET', '/api/appointments/employees/' + booking.employeeId + '/dates');
+    const dates = data.availableDates || [];
+    if (!dates.length) {
+      el.innerHTML = '<p style="color:var(--gray)">Sin fechas disponibles para este barbero</p>'; return;
+    }
+    el.innerHTML = '<div class="dates-grid">' + dates.map(d => {
+      const label = new Date(d + 'T00:00:00').toLocaleDateString('es-CO', { weekday:'short', day:'numeric', month:'short' });
+      return `<button class="date-btn" onclick="selectDate('${d}', this)">${label}</button>`;
+    }).join('') + '</div>';
+  } catch (e2) {
+    el.innerHTML = '<p style="color:var(--error)">Error cargando fechas</p>';
+  }
+}
+
+function selectDate(d, el) {
+  booking.date = d;
+  document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+async function loadBookingSlots() {
+  const el = document.getElementById('bookingSlots');
+  if (!booking.date) {
+    el.innerHTML = '<p style="color:var(--error)">Selecciona una fecha primero</p>'; return;
+  }
+  el.innerHTML = '<div class="loading-state"><span class="spinner"></span> Cargando...</div>';
+  const ids = booking.serviceIds.map(id => 'serviceIds=' + id).join('&');
+  try {
+    const slots = await api('GET', `/api/appointments/employees/${booking.employeeId}/slots?date=${booking.date}&${ids}`);
+    if (!slots.length) {
+      el.innerHTML = '<p style="color:var(--gray)">Sin horarios disponibles para esta fecha</p>'; return;
+    }
+    el.innerHTML = '<div class="slots-grid">' + slots.map(s => {
+      const label = s.startTime.substring(0,5) + ' – ' + s.endTime.substring(0,5);
+      return `<button class="slot-btn" onclick="selectSlot('${s.startTime}', this)">${label}</button>`;
+    }).join('') + '</div>';
+  } catch (e2) {
+    el.innerHTML = '<p style="color:var(--error)">Error cargando horarios</p>';
+  }
+}
+
+function selectSlot(t, el) {
+  booking.startTime = t;
+  document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+async function loadBookingSummary() {
+  const el = document.getElementById('bookingSummary');
+  el.innerHTML = '<div class="loading-state"><span class="spinner"></span> Calculando...</div>';
+  const ids = booking.serviceIds.map(id => 'serviceIds=' + id).join('&');
+  try {
+    const s = await api('GET', `/api/appointments/summary?employeeId=${booking.employeeId}&date=${booking.date}&startTime=${booking.startTime}&${ids}`);
+    el.innerHTML = `
+      <div class="summary-box">
+        <h3>Resumen de cita</h3>
+        <div class="summary-row"><span class="label">Barbero</span><span class="val">${s.employeeNames} ${s.employeeLastNames}</span></div>
+        <div class="summary-row"><span class="label">Fecha</span><span class="val">${new Date(s.date+'T00:00:00').toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'})}</span></div>
+        <div class="summary-row"><span class="label">Horario</span><span class="val">${s.startTime.substring(0,5)} – ${s.endTime.substring(0,5)}</span></div>
+        <div class="summary-row"><span class="label">Servicios</span><span class="val">${(s.serviceNames||[]).join(', ')}</span></div>
+        <div class="summary-row"><span class="label">Duración</span><span class="val">${s.totalDuration} min</span></div>
+        <div class="summary-row" style="margin-top:8px">
+          <span class="label" style="font-weight:500">Total</span>
+          <span class="val summary-total">$${parseFloat(s.totalPrice).toLocaleString('es-CO')}</span>
+        </div>
+      </div>`;
+  } catch (e2) {
+    el.innerHTML = '<p style="color:var(--error)">Error calculando resumen</p>';
+  }
+}
+
+async function confirmAppointment() {
+  if (!token) {
+    toast('Debes iniciar sesión para confirmar una cita', '');
+    showPage('login'); return;
+  }
+  const errEl = document.getElementById('confirmError');
+  const btn   = document.getElementById('btnConfirm');
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Confirmando...';
+
+  try {
+    const data = await api('POST', '/api/appointments/confirm', {
+      employeeId: booking.employeeId,
+      date:       booking.date,
+      startTime:  booking.startTime,
+      serviceIds: booking.serviceIds
+    });
+    toast('¡Cita confirmada! ID: ' + data.appointmentId, 'success');
+    document.getElementById('bookingSummary').innerHTML = `
+      <div class="summary-box" style="border-color:rgba(29,158,117,0.4)">
+        <h3 style="color:var(--success)">✓ Cita confirmada</h3>
+        <div class="summary-row"><span class="label">ID de cita</span><span class="val">#${data.appointmentId}</span></div>
+        <div class="summary-row"><span class="label">Barbero</span><span class="val">${data.employeeNames} ${data.employeeLastNames}</span></div>
+        <div class="summary-row"><span class="label">Fecha</span><span class="val">${new Date(data.date+'T00:00:00').toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'})}</span></div>
+        <div class="summary-row"><span class="label">Horario</span><span class="val">${data.startTime.substring(0,5)} – ${data.endTime.substring(0,5)}</span></div>
+        <div class="summary-row"><span class="label">Estado</span><span class="val"><span class="card-badge badge-pending">${data.status}</span></span></div>
+        <div class="summary-row"><span class="label">Total</span><span class="val summary-total">$${parseFloat(data.totalPrice).toLocaleString('es-CO')}</span></div>
+      </div>`;
+    btn.style.display = 'none';
+    resetBooking();
+  } catch (e2) {
+    errEl.textContent = e2.message || 'Error al confirmar la cita';
+    errEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Confirmar cita';
+  }
+}
+
+// ─── Navegación del wizard ────────────────────────────────────────────────────
+function goStep(n) {
+  const cur = parseInt(document.querySelector('.step-panel.active').id.replace('panel',''));
+  if (n > cur) {
+    if (cur === 1 && !booking.serviceIds.length)  { toast('Selecciona al menos un servicio', ''); return; }
+    if (cur === 2 && !booking.employeeId)          { toast('Selecciona un barbero', '');           return; }
+    if (cur === 3 && !booking.date)                { toast('Selecciona una fecha', '');            return; }
+    if (cur === 4 && !booking.startTime)           { toast('Selecciona un horario', '');           return; }
+  }
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel' + n).classList.add('active');
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById('step' + i).className =
+      'step-dot' + (i < n ? ' done' : i === n ? ' active' : '');
+  }
+  if (n === 2) loadBookingEmployees();
+  if (n === 3) loadBookingDates();
+  if (n === 4) loadBookingSlots();
+  if (n === 5) loadBookingSummary();
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+updateNav();
+loadHomeServices();
+</script>
+</body>
+</html>
