@@ -19,6 +19,7 @@
     --gray-light: #BBBBB7;
     --white: #F5F3EE;
     --error: #E24B4A;
+    --error-bg: rgba(226,75,74,0.1);
     --success: #1D9E75;
     --radius: 4px;
     --radius-lg: 10px;
@@ -51,7 +52,7 @@
     color: var(--gold); letter-spacing: 1px;
   }
   .nav-brand span { color: var(--white); }
-  .nav-links { display: flex; gap: 8px; align-items: center; }
+  .nav-links { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .btn-nav {
     background: none; border: none; color: var(--gray-light);
     font-family: 'DM Sans', sans-serif; font-size: 14px;
@@ -68,6 +69,7 @@
   }
   .btn-gold:hover { background: var(--gold-light); }
   .btn-gold:active { transform: scale(0.98); }
+  .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
   .btn-outline {
     background: none; border: 1px solid rgba(201,168,76,0.4);
     color: var(--gold); font-family: 'DM Sans', sans-serif; font-size: 14px;
@@ -183,7 +185,31 @@
   }
   .field input:focus, .field select:focus { border-color: var(--gold); }
   .field input::placeholder { color: var(--gray); }
+  .field input.field-error { border-color: var(--error); }
   .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .password-wrapper input {
+    padding-right: 40px;
+  }
+  .toggle-password {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: var(--gray);
+    cursor: pointer;
+    font-size: 18px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .toggle-password:hover { color: var(--gold); }
 
   .form-error {
     background: rgba(226,75,74,0.1); border: 1px solid rgba(226,75,74,0.3);
@@ -215,6 +241,7 @@
   }
   .date-btn:hover { border-color: rgba(201,168,76,0.4); }
   .date-btn.selected { background: var(--gold); color: var(--black); border-color: var(--gold); font-weight: 500; }
+  .date-btn.disabled { opacity: 0.4; cursor: not-allowed; }
 
   .slots-grid {
     display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
@@ -277,6 +304,13 @@
     background: rgba(201,168,76,0.15); color: var(--gold);
   }
 
+  .summary-employee {
+    background: var(--dark);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-top: 12px;
+  }
+
   #toast {
     position: fixed; bottom: 28px; right: 28px;
     background: var(--dark3); border: 1px solid rgba(255,255,255,0.1);
@@ -321,7 +355,6 @@
     <button class="btn-nav" onclick="showPage('booking')" id="btnBooking">Reservar</button>
     <button class="btn-nav" id="btnLogin" onclick="showPage('login')">Ingresar</button>
     <button class="btn-gold" id="btnRegisterNav" onclick="showPage('register')">Registrarse</button>
-    <!-- Visibles solo cuando hay sesión -->
     <button class="btn-nav" id="btnProfile" style="display:none" onclick="showPage('profile')">Mi perfil</button>
     <button class="btn-nav" id="btnAdmin"    style="display:none" onclick="showPage('admin')">Admin</button>
     <button class="btn-nav" id="btnEmployee" style="display:none" onclick="showPage('employee')">Empleado</button>
@@ -435,8 +468,11 @@
         </div>
         <div class="field">
           <label>Contraseña</label>
-          <input type="password" id="loginPass" placeholder="••••••••"
-                 onkeydown="if(event.key==='Enter')doLogin()" />
+          <div class="password-wrapper">
+            <input type="password" id="loginPass" placeholder="••••••••"
+                   onkeydown="if(event.key==='Enter')doLogin()" />
+            <button type="button" class="toggle-password" onclick="togglePassword('loginPass')">👁</button>
+          </div>
         </div>
         <button class="btn-gold btn-full" onclick="doLogin()">Ingresar</button>
         <div class="form-link">¿No tienes cuenta? <a onclick="showPage('register')">Regístrate aquí</a></div>
@@ -453,24 +489,30 @@
         <div id="regError" class="form-error"></div>
         <div id="regSuccess" class="form-success"></div>
         <div class="field-row">
-          <div class="field"><label>Nombres</label><input type="text" id="regNames" placeholder="Juan" /></div>
-          <div class="field"><label>Apellidos</label><input type="text" id="regLastNames" placeholder="Pérez" /></div>
+          <div class="field"><label>Nombres *</label><input type="text" id="regNames" placeholder="Juan" /></div>
+          <div class="field"><label>Apellidos *</label><input type="text" id="regLastNames" placeholder="Pérez" /></div>
         </div>
         <div class="field">
-          <label>Correo electrónico</label>
+          <label>Correo electrónico *</label>
           <input type="email" id="regEmail" placeholder="tu@correo.com" />
         </div>
         <div class="field">
-          <label>Teléfono</label>
+          <label>Teléfono *</label>
           <input type="tel" id="regPhone" placeholder="3001234567" />
         </div>
         <div class="field">
-          <label>Contraseña</label>
-          <input type="password" id="regPass" placeholder="Mín. 6 caracteres" />
+          <label>Contraseña *</label>
+          <div class="password-wrapper">
+            <input type="password" id="regPass" placeholder="Mín. 6 caracteres" />
+            <button type="button" class="toggle-password" onclick="togglePassword('regPass')">👁</button>
+          </div>
         </div>
         <div class="field">
-          <label>Confirmar contraseña</label>
-          <input type="password" id="regConfirmPass" placeholder="Repite tu contraseña" />
+          <label>Confirmar contraseña *</label>
+          <div class="password-wrapper">
+            <input type="password" id="regConfirmPass" placeholder="Repite tu contraseña" />
+            <button type="button" class="toggle-password" onclick="togglePassword('regConfirmPass')">👁</button>
+          </div>
         </div>
         <button class="btn-gold btn-full" onclick="doRegister()">Crear cuenta</button>
         <div class="form-link">¿Ya tienes cuenta? <a onclick="showPage('login')">Ingresar</a></div>
@@ -492,9 +534,27 @@
       <p class="subtitle">Actualiza tu contraseña de acceso</p>
       <div id="pwdError" class="form-error"></div>
       <div id="pwdSuccess" class="form-success"></div>
-      <div class="field"><label>Contraseña actual</label><input type="password" id="pwdCurrent" placeholder="••••••••" /></div>
-      <div class="field"><label>Nueva contraseña</label><input type="password" id="pwdNew" placeholder="••••••••" /></div>
-      <div class="field"><label>Confirmar nueva contraseña</label><input type="password" id="pwdConfirm" placeholder="••••••••" /></div>
+      <div class="field">
+        <label>Contraseña actual</label>
+        <div class="password-wrapper">
+          <input type="password" id="pwdCurrent" placeholder="••••••••" />
+          <button type="button" class="toggle-password" onclick="togglePassword('pwdCurrent')">👁</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Nueva contraseña</label>
+        <div class="password-wrapper">
+          <input type="password" id="pwdNew" placeholder="••••••••" />
+          <button type="button" class="toggle-password" onclick="togglePassword('pwdNew')">👁</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Confirmar nueva contraseña</label>
+        <div class="password-wrapper">
+          <input type="password" id="pwdConfirm" placeholder="••••••••" />
+          <button type="button" class="toggle-password" onclick="togglePassword('pwdConfirm')">👁</button>
+        </div>
+      </div>
       <button class="btn-gold btn-full" onclick="doChangePassword()">Actualizar contraseña</button>
     </div>
   </div>
@@ -511,17 +571,34 @@
       <div id="adminError" class="form-error"></div>
       <div id="adminSuccess" class="form-success"></div>
       <div class="field-row">
-        <div class="field"><label>Nombres</label><input type="text" id="empNames" placeholder="Juan" /></div>
-        <div class="field"><label>Apellidos</label><input type="text" id="empLastNames" placeholder="García" /></div>
+        <div class="field"><label>Nombres *</label><input type="text" id="empNames" placeholder="Juan" /></div>
+        <div class="field"><label>Apellidos *</label><input type="text" id="empLastNames" placeholder="García" /></div>
       </div>
-      <div class="field"><label>Correo electrónico</label><input type="email" id="empEmail" placeholder="barbero@shop.com" /></div>
+      <div class="field">
+        <label>Correo electrónico *</label>
+        <input type="email" id="empEmail" placeholder="barbero@shop.com" />
+      </div>
       <div class="field-row">
-        <div class="field"><label>Documento</label><input type="text" id="empDoc" placeholder="123456789" /></div>
-        <div class="field"><label>Teléfono</label><input type="tel" id="empPhone" placeholder="3001234567" /></div>
+        <div class="field"><label>Documento / Cédula *</label><input type="text" id="empDoc" placeholder="123456789" /></div>
+        <div class="field"><label>Teléfono *</label><input type="tel" id="empPhone" placeholder="3001234567" /></div>
       </div>
-      <div class="field"><label>Dirección</label><input type="text" id="empAddress" placeholder="Calle 10 #25-40" /></div>
-      <div class="field"><label>Contraseña temporal</label><input type="password" id="empPass" placeholder="Mín. 6 caracteres" /></div>
-      <div class="field"><label>IDs de servicios (separados por coma)</label><input type="text" id="empServices" placeholder="1, 2, 3" /></div>
+      <div class="field">
+        <label>Dirección *</label>
+        <input type="text" id="empAddress" placeholder="Calle 10 #25-40" />
+      </div>
+      <div class="field">
+        <label>Contraseña temporal *</label>
+        <div class="password-wrapper">
+          <input type="password" id="empPass" placeholder="Mín. 6 caracteres" />
+          <button type="button" class="toggle-password" onclick="togglePassword('empPass')">👁</button>
+        </div>
+        <small style="color:var(--gray); font-size:11px;">Debe tener: mayúscula, minúscula, número</small>
+      </div>
+      <div class="field">
+        <label>IDs de servicios (separados por coma) *</label>
+        <input type="text" id="empServices" placeholder="1, 2, 3" />
+        <small style="color:var(--gray); font-size:11px;">Ejemplo: 1, 2, 3</small>
+      </div>
       <button class="btn-gold btn-full" onclick="doRegisterEmployee()">Registrar empleado</button>
     </div>
   </div>
@@ -534,7 +611,7 @@
     </div>
     <div class="form-card" style="max-width:480px;margin:0">
       <h2 style="font-size:20px;margin-bottom:4px">Agregar disponibilidad</h2>
-      <p class="subtitle">Define tu horario de trabajo para los próximos días</p>
+      <p class="subtitle">Define tu horario de trabajo para los próximos días (8:00 - 19:00)</p>
       <div id="availError" class="form-error"></div>
       <div id="availSuccess" class="form-success"></div>
       <div id="availDays"></div>
@@ -550,10 +627,9 @@
 
 <script>
 // ─── Configuración ────────────────────────────────────────────────────────────
-// Cambia esta URL si tu backend corre en otro puerto o host
 const API = 'http://localhost:8080';
 
-// Roles tal como los devuelve el backend (enum Role del dominio)
+// Roles
 const ROLE_ADMIN    = 'ADMINISTRADOR';
 const ROLE_EMPLOYEE = 'BARBERO';
 const ROLE_CLIENT   = 'CLIENTE';
@@ -563,6 +639,7 @@ let token = localStorage.getItem('bs_token') || null;
 let user  = JSON.parse(localStorage.getItem('bs_user') || 'null');
 
 const booking = { serviceIds: [], employeeId: null, date: null, startTime: null };
+let forcePasswordChange = false; // Flag para forzar cambio de contraseña
 
 // ─── Llamadas al API ─────────────────────────────────────────────────────────
 async function api(method, path, body) {
@@ -577,7 +654,10 @@ async function api(method, path, body) {
   const text = await r.text();
   let data;
   try { data = JSON.parse(text); } catch { data = { message: text }; }
-  if (!r.ok) throw data;
+  if (!r.ok) {
+    console.error(`API Error ${r.status}:`, data);
+    throw new Error(data.message || data.error || `Error ${r.status}`);
+  }
   return data;
 }
 
@@ -589,19 +669,111 @@ function toast(msg, type = '') {
   setTimeout(() => t.className = '', 3500);
 }
 
+// ─── Toggle Password ─────────────────────────────────────────────────────────
+function togglePassword(fieldId) {
+  const field = document.getElementById(fieldId);
+  if (field.type === 'password') {
+    field.type = 'text';
+  } else {
+    field.type = 'password';
+  }
+}
+
+// ─── Validaciones ────────────────────────────────────────────────────────────
+function validateName(name, fieldName) {
+  if (!name || name.trim() === '') {
+    return { valid: false, message: `${fieldName} no puede estar vacío` };
+  }
+  if (/[0-9]/.test(name)) {
+    return { valid: false, message: `${fieldName} no puede contener números` };
+  }
+  return { valid: true };
+}
+
+function validateEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email || email.trim() === '') {
+    return { valid: false, message: 'El correo es requerido' };
+  }
+  if (!emailRegex.test(email)) {
+    return { valid: false, message: 'Formato de correo inválido (usuario@dominio.extension)' };
+  }
+  return { valid: true };
+}
+
+function validatePhone(phone) {
+  if (!phone || phone.trim() === '') {
+    return { valid: false, message: 'El teléfono es requerido' };
+  }
+  if (!/^\d+$/.test(phone)) {
+    return { valid: false, message: 'El teléfono solo debe contener dígitos' };
+  }
+  if (phone.length < 7 || phone.length > 15) {
+    return { valid: false, message: 'El teléfono debe tener entre 7 y 15 dígitos' };
+  }
+  return { valid: true };
+}
+
+function validatePassword(password) {
+  if (!password || password === '') {
+    return { valid: false, message: 'La contraseña es requerida' };
+  }
+  if (password.length < 6 || password.length > 15) {
+    return { valid: false, message: 'La contraseña debe tener entre 6 y 15 caracteres' };
+  }
+  if (!/[A-Z]/.test(password)) {
+    return { valid: false, message: 'La contraseña debe tener al menos una mayúscula' };
+  }
+  if (!/[a-z]/.test(password)) {
+    return { valid: false, message: 'La contraseña debe tener al menos una minúscula' };
+  }
+  if (!/[0-9]/.test(password)) {
+    return { valid: false, message: 'La contraseña debe tener al menos un número' };
+  }
+  return { valid: true };
+}
+
+function highlightEmptyFields(fields) {
+  let hasEmpty = false;
+  fields.forEach(({ element, name }) => {
+    if (!element.value || element.value.trim() === '') {
+      element.classList.add('field-error');
+      hasEmpty = true;
+    } else {
+      element.classList.remove('field-error');
+    }
+  });
+  return hasEmpty;
+}
+
 // ─── Páginas ──────────────────────────────────────────────────────────────────
 function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page' + id[0].toUpperCase() + id.slice(1)).classList.add('active');
+  // Si hay cambio de contraseña forzado, solo permitir ir a profile
+  if (forcePasswordChange && id !== 'profile') {
+    toast('Debes cambiar tu contraseña temporal primero', 'error');
+    return;
+  }
 
+  // Elimina esta línea o modifícala
+  // if (id === 'booking') {
+  //   resetBooking();
+  // }
+
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const pageId = 'page' + id[0].toUpperCase() + id.slice(1);
+  const targetPage = document.getElementById(pageId);
+  if (targetPage) targetPage.classList.add('active');
+
+  // Actualizar clase active en botones de navegación
   document.querySelectorAll('.btn-nav').forEach(b => b.classList.remove('active'));
   const labels = { home:'Inicio', booking:'Reservar', login:'Ingresar', profile:'Mi perfil', admin:'Admin', employee:'Empleado' };
   document.querySelectorAll('.btn-nav').forEach(b => {
     if (b.textContent.trim() === labels[id]) b.classList.add('active');
   });
 
-  if (id === 'home')    loadHomeServices();
-  if (id === 'booking') { resetBooking(); loadBookingServices(); }
+  // Cargar datos según la página
+  if (id === 'home') loadHomeServices();
+  if (id === 'booking') loadBookingServices(); // ← Cargar directamente, sin reset
   if (id === 'employee') renderAvailDays();
 }
 
@@ -610,31 +782,109 @@ function updateNav() {
   const loggedIn = !!token;
   const role = user?.role || '';
 
-  document.getElementById('btnLogin').style.display      = loggedIn ? 'none' : '';
-  document.getElementById('btnRegisterNav').style.display = loggedIn ? 'none' : '';
-  document.getElementById('btnProfile').style.display    = loggedIn ? '' : 'none';
-  document.getElementById('btnLogout').style.display     = loggedIn ? '' : 'none';
+  const loginBtn = document.getElementById('btnLogin');
+  const registerBtn = document.getElementById('btnRegisterNav');
+  const profileBtn = document.getElementById('btnProfile');
+  const logoutBtn = document.getElementById('btnLogout');
+  const adminBtn = document.getElementById('btnAdmin');
+  const employeeBtn = document.getElementById('btnEmployee');
 
-  // Botones de rol — usan los valores exactos del enum Role del backend
-  document.getElementById('btnAdmin').style.display    = role === ROLE_ADMIN    ? '' : 'none';
-  document.getElementById('btnEmployee').style.display = role === ROLE_EMPLOYEE ? '' : 'none';
+  if (loginBtn) loginBtn.style.display = loggedIn ? 'none' : '';
+  if (registerBtn) registerBtn.style.display = loggedIn ? 'none' : '';
+  if (profileBtn) profileBtn.style.display = loggedIn ? '' : 'none';
+  if (logoutBtn) logoutBtn.style.display = loggedIn ? '' : 'none';
+  
+  if (adminBtn) adminBtn.style.display = (loggedIn && role === ROLE_ADMIN) ? '' : 'none';
+  if (employeeBtn) employeeBtn.style.display = (loggedIn && role === ROLE_EMPLOYEE) ? '' : 'none';
 
   if (loggedIn && user) {
     const initials = ((user.names || '?')[0] || '?').toUpperCase();
-    document.getElementById('profileAvatar').textContent = initials;
-    document.getElementById('profileName').innerHTML =
-      (user.names || '—') + '<span class="role-badge">' + role + '</span>';
-    document.getElementById('profileEmail').textContent = user.email || '';
+    const avatarEl = document.getElementById('profileAvatar');
+    const nameEl = document.getElementById('profileName');
+    const emailEl = document.getElementById('profileEmail');
+    
+    if (avatarEl) avatarEl.textContent = initials;
+    if (nameEl) nameEl.innerHTML = (user.names || '—') + '<span class="role-badge">' + role + '</span>';
+    if (emailEl) emailEl.textContent = user.email || '';
+  } else {
+    // Limpiar perfil cuando no hay sesión
+    const avatarEl = document.getElementById('profileAvatar');
+    const nameEl = document.getElementById('profileName');
+    const emailEl = document.getElementById('profileEmail');
+    
+    if (avatarEl) avatarEl.textContent = '?';
+    if (nameEl) nameEl.innerHTML = '—';
+    if (emailEl) emailEl.textContent = '—';
   }
 }
 
 function logout() {
-  token = null; user = null;
+  // Limpiar estado global
+  token = null;
+  user = null;
+  forcePasswordChange = false;
+  
+  // Limpiar localStorage
   localStorage.removeItem('bs_token');
   localStorage.removeItem('bs_user');
+  
+  // Limpiar datos de booking
+  resetBooking();
+  
+  // Limpiar cualquier formulario visible
+  clearAllForms();
+  
+  // Actualizar navegación
   updateNav();
+  
+  // Redirigir a home
   showPage('home');
-  toast('Sesión cerrada');
+  
+  // Mostrar mensaje
+  toast('Sesión cerrada correctamente', 'success');
+  
+  // Recargar servicios del home para asegurar datos frescos
+  loadHomeServices();
+}
+
+// Función auxiliar para limpiar todos los formularios
+function clearAllForms() {
+  // Limpiar formulario de login
+  if (document.getElementById('loginEmail')) document.getElementById('loginEmail').value = '';
+  if (document.getElementById('loginPass')) document.getElementById('loginPass').value = '';
+  
+  // Limpiar formulario de registro
+  if (document.getElementById('regNames')) document.getElementById('regNames').value = '';
+  if (document.getElementById('regLastNames')) document.getElementById('regLastNames').value = '';
+  if (document.getElementById('regEmail')) document.getElementById('regEmail').value = '';
+  if (document.getElementById('regPhone')) document.getElementById('regPhone').value = '';
+  if (document.getElementById('regPass')) document.getElementById('regPass').value = '';
+  if (document.getElementById('regConfirmPass')) document.getElementById('regConfirmPass').value = '';
+  
+  // Limpiar formulario de cambio de contraseña
+  if (document.getElementById('pwdCurrent')) document.getElementById('pwdCurrent').value = '';
+  if (document.getElementById('pwdNew')) document.getElementById('pwdNew').value = '';
+  if (document.getElementById('pwdConfirm')) document.getElementById('pwdConfirm').value = '';
+  
+  // Limpiar formulario de empleado (admin)
+  if (document.getElementById('empNames')) document.getElementById('empNames').value = '';
+  if (document.getElementById('empLastNames')) document.getElementById('empLastNames').value = '';
+  if (document.getElementById('empEmail')) document.getElementById('empEmail').value = '';
+  if (document.getElementById('empDoc')) document.getElementById('empDoc').value = '';
+  if (document.getElementById('empPhone')) document.getElementById('empPhone').value = '';
+  if (document.getElementById('empAddress')) document.getElementById('empAddress').value = '';
+  if (document.getElementById('empPass')) document.getElementById('empPass').value = '';
+  if (document.getElementById('empServices')) document.getElementById('empServices').value = '';
+  
+  // Limpiar disponibilidad del empleado
+  availDays = [{}];
+  renderAvailDays();
+  
+  // Limpiar mensajes de error/éxito
+  document.querySelectorAll('.form-error, .form-success').forEach(el => {
+    el.style.display = 'none';
+    el.innerHTML = '';
+  });
 }
 
 // ─── LOGIN ────────────────────────────────────────────────────────────────────
@@ -644,17 +894,33 @@ async function doLogin() {
   const errEl    = document.getElementById('loginError');
   errEl.style.display = 'none';
 
+  if (!email || !password) {
+    errEl.textContent = 'Todos los campos son requeridos';
+    errEl.style.display = 'block';
+    return;
+  }
+
   try {
-    // El backend devuelve: { token, role, names, isPasswordTemporary }
     const data = await api('POST', '/api/auth/login', { email, password });
+    
+    // Limpiar estado anterior completamente antes de cargar nuevo
+    clearAllForms();
+    
     token = data.token;
     user  = { names: data.names, role: data.role, email };
     localStorage.setItem('bs_token', token);
     localStorage.setItem('bs_user', JSON.stringify(user));
+    
+    forcePasswordChange = data.passwordTemporary || data.isPasswordTemporary || false;
+    
     updateNav();
     toast('¡Bienvenido ' + data.names + '!', 'success');
 
-    if (data.passwordTemporary || data.isPasswordTemporary) {
+    // Limpiar campos de login
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPass').value = '';
+
+    if (forcePasswordChange) {
       toast('Tu contraseña es temporal. Por favor cámbiala.', '');
       showPage('profile');
     } else {
@@ -672,30 +938,91 @@ async function doRegister() {
   const sucEl = document.getElementById('regSuccess');
   errEl.style.display = 'none'; sucEl.style.display = 'none';
 
-  const body = {
-    email:           document.getElementById('regEmail').value.trim(),
-    password:        document.getElementById('regPass').value,
-    confirmPassword: document.getElementById('regConfirmPass').value,
-    names:           document.getElementById('regNames').value.trim(),
-    lastNames:       document.getElementById('regLastNames').value.trim(),
-    phoneNumber:     document.getElementById('regPhone').value.trim()
-  };
+  const names = document.getElementById('regNames').value.trim();
+  const lastNames = document.getElementById('regLastNames').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const phone = document.getElementById('regPhone').value.trim();
+  const password = document.getElementById('regPass').value;
+  const confirmPassword = document.getElementById('regConfirmPass').value;
+
+  // Validar campos vacíos
+  const fields = [
+    { element: document.getElementById('regNames'), name: 'Nombres' },
+    { element: document.getElementById('regLastNames'), name: 'Apellidos' },
+    { element: document.getElementById('regEmail'), name: 'Correo' },
+    { element: document.getElementById('regPhone'), name: 'Teléfono' },
+    { element: document.getElementById('regPass'), name: 'Contraseña' },
+    { element: document.getElementById('regConfirmPass'), name: 'Confirmar contraseña' }
+  ];
+  
+  if (highlightEmptyFields(fields)) {
+    errEl.textContent = 'Todos los campos son requeridos';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Validar nombre
+  const nameValidation = validateName(names, 'Nombres');
+  if (!nameValidation.valid) {
+    errEl.textContent = nameValidation.message;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const lastNameValidation = validateName(lastNames, 'Apellidos');
+  if (!lastNameValidation.valid) {
+    errEl.textContent = lastNameValidation.message;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Validar email
+  const emailValidation = validateEmail(email);
+  if (!emailValidation.valid) {
+    errEl.textContent = emailValidation.message;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Validar teléfono
+  const phoneValidation = validatePhone(phone);
+  if (!phoneValidation.valid) {
+    errEl.textContent = phoneValidation.message;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Validar contraseña
+  const passValidation = validatePassword(password);
+  if (!passValidation.valid) {
+    errEl.textContent = passValidation.message;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Validar coincidencia de contraseñas
+  if (password !== confirmPassword) {
+    errEl.textContent = 'Las contraseñas no coinciden';
+    errEl.style.display = 'block';
+    return;
+  }
 
   try {
-    // El backend devuelve: { token, names, message }
-    const data = await api('POST', '/api/auth/register', body);
+    const data = await api('POST', '/api/auth/register', {
+      email, password, confirmPassword, names, lastNames, phoneNumber: phone
+    });
     token = data.token;
-    user  = { names: data.names, role: ROLE_CLIENT, email: body.email };
+    user  = { names: data.names, role: ROLE_CLIENT, email };
     localStorage.setItem('bs_token', token);
     localStorage.setItem('bs_user', JSON.stringify(user));
+    forcePasswordChange = false;
     updateNav();
-    sucEl.textContent = '¡Cuenta creada! ' + (data.message || '');
+    sucEl.textContent = '¡Cuenta creada exitosamente! Bienvenido ' + data.names;
     sucEl.style.display = 'block';
     toast('Cuenta creada exitosamente', 'success');
     setTimeout(() => showPage('home'), 1500);
   } catch (e) {
-    const msg = e.message || (Array.isArray(e) ? e.join(', ') : JSON.stringify(e));
-    errEl.textContent = msg;
+    errEl.textContent = e.message || 'Error al registrar. El correo podría ya estar en uso.';
     errEl.style.display = 'block';
   }
 }
@@ -706,53 +1033,183 @@ async function doChangePassword() {
   const sucEl = document.getElementById('pwdSuccess');
   errEl.style.display = 'none'; sucEl.style.display = 'none';
 
+  const currentPassword = document.getElementById('pwdCurrent').value;
+  const newPassword = document.getElementById('pwdNew').value;
+  const confirmPassword = document.getElementById('pwdConfirm').value;
+
+  // Validar campos vacíos
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    errEl.textContent = 'Todos los campos son requeridos';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Validar nueva contraseña
+  const passValidation = validatePassword(newPassword);
+  if (!passValidation.valid) {
+    errEl.textContent = passValidation.message;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    errEl.textContent = 'Las nuevas contraseñas no coinciden';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Verificar que no sea igual a la actual (el backend también lo validará)
+  if (currentPassword === newPassword) {
+    errEl.textContent = 'La nueva contraseña no puede ser igual a la actual';
+    errEl.style.display = 'block';
+    return;
+  }
+
   try {
     await api('POST', '/api/auth/change-password', {
-      currentPassword: document.getElementById('pwdCurrent').value,
-      newPassword:     document.getElementById('pwdNew').value,
-      confirmPassword: document.getElementById('pwdConfirm').value
+      currentPassword, newPassword, confirmPassword
     });
     sucEl.textContent = 'Contraseña actualizada correctamente';
     sucEl.style.display = 'block';
+    
     document.getElementById('pwdCurrent').value = '';
     document.getElementById('pwdNew').value = '';
     document.getElementById('pwdConfirm').value = '';
+
+    // Si era cambio forzado, ahora ya puede usar el sistema
+    if (forcePasswordChange) {
+      forcePasswordChange = false;
+      toast('Contraseña actualizada. Ya puedes usar todas las funciones.', 'success');
+      showPage('home');
+    } else {
+      toast('Contraseña actualizada correctamente', 'success');
+    }
   } catch (e) {
     errEl.textContent = e.message || 'Error al cambiar contraseña';
     errEl.style.display = 'block';
   }
 }
 
-// ─── ADMIN: Registrar empleado ────────────────────────────────────────────────
+// ─── ADMIN: Registrar empleado con validaciones completas ─────────────────────
 async function doRegisterEmployee() {
   const errEl = document.getElementById('adminError');
   const sucEl = document.getElementById('adminSuccess');
   errEl.style.display = 'none'; sucEl.style.display = 'none';
 
-  const serviceIds = document.getElementById('empServices').value
-    .split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+  const names = document.getElementById('empNames').value.trim();
+  const lastNames = document.getElementById('empLastNames').value.trim();
+  const email = document.getElementById('empEmail').value.trim();
+  const documentNumber = document.getElementById('empDoc').value.trim();
+  const phone = document.getElementById('empPhone').value.trim();
+  const address = document.getElementById('empAddress').value.trim();
+  const password = document.getElementById('empPass').value;
+  const servicesInput = document.getElementById('empServices').value.trim();
+
+  // Validar campos vacíos
+  const fields = [
+    { element: document.getElementById('empNames'), name: 'Nombres' },
+    { element: document.getElementById('empLastNames'), name: 'Apellidos' },
+    { element: document.getElementById('empEmail'), name: 'Correo' },
+    { element: document.getElementById('empDoc'), name: 'Documento' },
+    { element: document.getElementById('empPhone'), name: 'Teléfono' },
+    { element: document.getElementById('empAddress'), name: 'Dirección' },
+    { element: document.getElementById('empPass'), name: 'Contraseña' },
+    { element: document.getElementById('empServices'), name: 'Servicios' }
+  ];
+
+  if (highlightEmptyFields(fields)) {
+    errEl.textContent = 'Todos los campos son requeridos';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Validar nombre
+  const nameValidation = validateName(names, 'Nombres');
+  if (!nameValidation.valid) {
+    errEl.textContent = nameValidation.message;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const lastNameValidation = validateName(lastNames, 'Apellidos');
+  if (!lastNameValidation.valid) {
+    errEl.textContent = lastNameValidation.message;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Validar email
+  const emailValidation = validateEmail(email);
+  if (!emailValidation.valid) {
+    errEl.textContent = emailValidation.message;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Validar teléfono
+  const phoneValidation = validatePhone(phone);
+  if (!phoneValidation.valid) {
+    errEl.textContent = phoneValidation.message;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Validar contraseña
+  const passValidation = validatePassword(password);
+  if (!passValidation.valid) {
+    errEl.textContent = passValidation.message;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Validar servicios
+  const serviceIds = servicesInput.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+  if (serviceIds.length === 0) {
+    errEl.textContent = 'Debe seleccionar al menos un servicio';
+    errEl.style.display = 'block';
+    return;
+  }
 
   try {
     const data = await api('POST', '/api/admin/employees', {
-      email:          document.getElementById('empEmail').value.trim(),
-      password:       document.getElementById('empPass').value,
-      documentNumber: document.getElementById('empDoc').value.trim(),
-      names:          document.getElementById('empNames').value.trim(),
-      lastNames:      document.getElementById('empLastNames').value.trim(),
-      phoneNumber:    document.getElementById('empPhone').value.trim(),
-      address:        document.getElementById('empAddress').value.trim(),
-      serviceIds
+      email, password, documentNumber, names, lastNames, phoneNumber: phone, address, serviceIds
     });
-    sucEl.textContent = 'Empleado "' + data.names + ' ' + data.lastNames + '" registrado correctamente';
+    
+    // Mostrar resumen del empleado registrado
+    sucEl.innerHTML = `
+      ✅ Empleado registrado correctamente<br/><br/>
+      <div class="summary-employee">
+        <strong>${data.names} ${data.lastNames}</strong><br/>
+        📧 ${data.email}<br/>
+        📞 ${phone}<br/>
+        📄 Documento: ${documentNumber}<br/>
+        🏠 ${address}<br/>
+        ✂️ Servicios: ${serviceIds.join(', ')}
+      </div>
+    `;
     sucEl.style.display = 'block';
-    toast('Empleado registrado', 'success');
+    toast('Empleado registrado correctamente', 'success');
+    
+    // Limpiar campos
+    document.getElementById('empNames').value = '';
+    document.getElementById('empLastNames').value = '';
+    document.getElementById('empEmail').value = '';
+    document.getElementById('empDoc').value = '';
+    document.getElementById('empPhone').value = '';
+    document.getElementById('empAddress').value = '';
+    document.getElementById('empPass').value = '';
+    document.getElementById('empServices').value = '';
+    
+    // Remover clases de error
+    fields.forEach(f => f.element.classList.remove('field-error'));
+    
   } catch (e) {
-    errEl.textContent = e.message || 'Error al registrar empleado';
+    errEl.textContent = e.message || 'Error al registrar empleado. El correo podría ya estar en uso.';
     errEl.style.display = 'block';
   }
 }
 
-// ─── EMPLEADO: Disponibilidad ─────────────────────────────────────────────────
+// ─── EMPLEADO: Disponibilidad (validar horario 8:00 - 19:00) ─────────────────
 let availDays = [];
 
 function renderAvailDays() {
@@ -765,8 +1222,8 @@ function renderAvailDays() {
         <input type="date" id="availDate${i}" value="${d.date||''}" min="${new Date().toISOString().split('T')[0]}" />
       </div>
       <div class="field-row">
-        <div class="field"><label>Hora inicio</label><input type="time" id="availStart${i}" value="${d.startTime||''}" /></div>
-        <div class="field"><label>Hora fin</label><input type="time" id="availEnd${i}" value="${d.endTime||''}" /></div>
+        <div class="field"><label>Hora inicio (8:00 - 19:00)</label><input type="time" id="availStart${i}" value="${d.startTime||''}" step="60" /></div>
+        <div class="field"><label>Hora fin (8:00 - 19:00)</label><input type="time" id="availEnd${i}" value="${d.endTime||''}" step="60" /></div>
       </div>
     </div>
   `).join('');
@@ -780,11 +1237,46 @@ async function doSetAvailability() {
   const sucEl = document.getElementById('availSuccess');
   errEl.style.display = 'none'; sucEl.style.display = 'none';
 
-  const days = availDays.map((_, i) => ({
-    date:      document.getElementById('availDate'  + i).value,
-    startTime: document.getElementById('availStart' + i).value + ':00',
-    endTime:   document.getElementById('availEnd'   + i).value + ':00'
-  }));
+  const days = [];
+  let hasError = false;
+
+  for (let i = 0; i < availDays.length; i++) {
+    const date = document.getElementById('availDate' + i).value;
+    let startTime = document.getElementById('availStart' + i).value;
+    let endTime = document.getElementById('availEnd' + i).value;
+
+    if (!date || !startTime || !endTime) {
+      errEl.textContent = 'Todos los campos de fecha y hora son requeridos';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    // Validar horario entre 8:00 y 19:00
+    const startHour = parseInt(startTime.split(':')[0]);
+    const endHour = parseInt(endTime.split(':')[0]);
+    
+    if (startHour < 8 || startHour >= 19) {
+      errEl.textContent = `El horario debe estar entre 8:00 y 19:00 (hora inicio ${startTime})`;
+      errEl.style.display = 'block';
+      return;
+    }
+    if (endHour < 8 || endHour > 19 || (endHour === 19 && parseInt(endTime.split(':')[1]) > 0)) {
+      errEl.textContent = `El horario debe estar entre 8:00 y 19:00 (hora fin ${endTime})`;
+      errEl.style.display = 'block';
+      return;
+    }
+    if (startHour >= endHour) {
+      errEl.textContent = 'La hora de inicio debe ser anterior a la hora de fin';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    days.push({
+      date,
+      startTime: startTime + ':00',
+      endTime: endTime + ':00'
+    });
+  }
 
   try {
     const data = await api('POST', '/api/employee/availability', { days });
@@ -803,9 +1295,12 @@ async function loadHomeServices() {
   const el = document.getElementById('homeServices');
   try {
     const services = await api('GET', '/api/appointments/services');
+    
     el.innerHTML = '<div class="cards-grid">' + services.map(s => `
       <div class="card">
-        <span class="card-badge ${s.available ? 'badge-avail' : 'badge-unavail'}">${s.available ? 'Disponible' : 'No disponible'}</span>
+        <span class="card-badge ${s.available ? 'badge-avail' : 'badge-unavail'}">
+          ${s.available ? 'Disponible' : 'No disponible'}
+        </span>
         <h3>${s.name}</h3>
         <p class="card-desc">${s.description || 'Servicio profesional de barbería'}</p>
         <div class="card-meta">
@@ -815,22 +1310,72 @@ async function loadHomeServices() {
       </div>
     `).join('') + '</div>';
   } catch (e) {
-    el.innerHTML = '<div class="loading-state" style="color:var(--error)">No se pudieron cargar los servicios. Verifica que el backend esté corriendo en ' + API + '</div>';
+    el.innerHTML = '<div class="loading-state" style="color:var(--error)">No se pudieron cargar los servicios.</div>';
   }
 }
 
 // ─── BOOKING ──────────────────────────────────────────────────────────────────
 function resetBooking() {
-  booking.serviceIds = []; booking.employeeId = null;
-  booking.date = null;     booking.startTime  = null;
+  // Limpiar estado
+  booking.serviceIds = []; 
+  booking.employeeId = null;
+  booking.date = null;     
+  booking.startTime = null;
+  
+  // Reset visual de wizard - pero NO limpiar el HTML de los contenedores
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  const panel1 = document.getElementById('panel1');
+  if (panel1) panel1.classList.add('active');
+  
+  for (let i = 1; i <= 5; i++) {
+    const step = document.getElementById('step' + i);
+    if (step) {
+      step.className = i === 1 ? 'step-dot active' : 'step-dot';
+    }
+  }
+  
+  // Reset botón confirmar
+  const confirmBtn = document.getElementById('btnConfirm');
+  if (confirmBtn) {
+    confirmBtn.disabled = false;
+    confirmBtn.style.display = '';
+    confirmBtn.textContent = 'Confirmar cita';
+  }
+  
+  // NO limpiar los contenedores aquí
+  // containers.forEach(id => { ... });
+  
+  // Limpiar mensajes de error
+  const confirmError = document.getElementById('confirmError');
+  if (confirmError) {
+    confirmError.style.display = 'none';
+    confirmError.textContent = '';
+  }
 }
 
 async function loadBookingServices() {
   const el = document.getElementById('bookingServices');
+  
+  // Mostrar loading
+  el.innerHTML = '<div class="loading-state"><span class="spinner"></span> Cargando servicios...</div>';
+  
   try {
     const services = await api('GET', '/api/appointments/services');
-    el.innerHTML = '<div class="cards-grid">' + services.filter(s => s.available).map(s => `
+    console.log('Servicios recibidos en booking:', services);
+    
+    // Filtrar solo disponibles
+    const availableServices = services.filter(s => s.available === true);
+    
+    console.log('Servicios disponibles para reservar:', availableServices);
+    
+    if (availableServices.length === 0) {
+      el.innerHTML = '<p style="color:var(--error); text-align:center; padding:40px;">No hay servicios disponibles actualmente. Por favor, contacta al administrador.</p>';
+      return;
+    }
+    
+    el.innerHTML = '<div class="cards-grid">' + availableServices.map(s => `
       <div class="card" id="svc${s.id}" onclick="toggleService(${s.id}, this)" style="cursor:pointer">
+        <span class="card-badge badge-avail">Disponible</span>
         <h3>${s.name}</h3>
         <p class="card-desc">${s.description || ''}</p>
         <div class="card-meta">
@@ -839,8 +1384,10 @@ async function loadBookingServices() {
         </div>
       </div>
     `).join('') + '</div>';
+    
   } catch (e) {
-    el.innerHTML = '<p style="color:var(--error)">Error cargando servicios</p>';
+    console.error('Error en loadBookingServices:', e);
+    el.innerHTML = '<p style="color:var(--error); text-align:center; padding:40px;">Error al cargar servicios. Verifica que el backend esté corriendo en ' + API + '</p>';
   }
 }
 
@@ -848,24 +1395,29 @@ function toggleService(id, el) {
   const idx = booking.serviceIds.indexOf(id);
   if (idx > -1) {
     booking.serviceIds.splice(idx, 1);
-    el.style.borderColor = ''; el.style.background = '';
+    el.style.borderColor = ''; 
+    el.style.background = '';
+    el.style.border = '';
   } else {
     booking.serviceIds.push(id);
     el.style.borderColor = 'rgba(201,168,76,0.7)';
     el.style.background  = 'rgba(201,168,76,0.06)';
+    el.style.border = '1px solid rgba(201,168,76,0.7)';
   }
 }
 
 async function loadBookingEmployees() {
   const el = document.getElementById('bookingEmployees');
   if (!booking.serviceIds.length) {
-    el.innerHTML = '<p style="color:var(--error)">Selecciona al menos un servicio primero</p>'; return;
+    el.innerHTML = '<p style="color:var(--error)">Selecciona al menos un servicio primero</p>'; 
+    return;
   }
   el.innerHTML = '<div class="loading-state"><span class="spinner"></span> Cargando...</div>';
   try {
     const employees = await api('GET', '/api/appointments/services/' + booking.serviceIds[0] + '/employees');
     if (!employees.length) {
-      el.innerHTML = '<p style="color:var(--gray)">No hay barberos disponibles para estos servicios</p>'; return;
+      el.innerHTML = '<p style="color:var(--gray)">No hay barberos disponibles para estos servicios</p>'; 
+      return;
     }
     el.innerHTML = '<div class="cards-grid">' + employees.map(e => `
       <div class="card" id="emp${e.id}" onclick="selectEmployee(${e.id}, this)" style="cursor:pointer">
@@ -883,25 +1435,52 @@ async function loadBookingEmployees() {
 
 function selectEmployee(id, el) {
   booking.employeeId = id;
-  document.querySelectorAll('[id^="emp"]').forEach(c => { c.style.borderColor = ''; c.style.background = ''; });
+  booking.date = null;
+  booking.startTime = null;
+  document.querySelectorAll('[id^="emp"]').forEach(c => { 
+    c.style.borderColor = ''; 
+    c.style.background = '';
+    c.style.border = '';
+  });
   el.style.borderColor = 'rgba(201,168,76,0.7)';
   el.style.background  = 'rgba(201,168,76,0.06)';
+  el.style.border = '1px solid rgba(201,168,76,0.7)';
 }
 
 async function loadBookingDates() {
   const el = document.getElementById('bookingDates');
   if (!booking.employeeId) {
-    el.innerHTML = '<p style="color:var(--error)">Selecciona un barbero primero</p>'; return;
+    el.innerHTML = '<p style="color:var(--error)">Selecciona un barbero primero</p>'; 
+    return;
   }
   el.innerHTML = '<div class="loading-state"><span class="spinner"></span> Cargando...</div>';
   try {
     const data  = await api('GET', '/api/appointments/employees/' + booking.employeeId + '/dates');
     const dates = data.availableDates || [];
     if (!dates.length) {
-      el.innerHTML = '<p style="color:var(--gray)">Sin fechas disponibles para este barbero</p>'; return;
+      el.innerHTML = '<p style="color:var(--gray)">Sin fechas disponibles para este barbero</p>'; 
+      return;
     }
-    el.innerHTML = '<div class="dates-grid">' + dates.map(d => {
-      const label = new Date(d + 'T00:00:00').toLocaleDateString('es-CO', { weekday:'short', day:'numeric', month:'short' });
+    
+    // Filtrar fechas: solo desde mañana hasta 15 días después
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const maxDate = new Date(today);
+    maxDate.setDate(today.getDate() + 15);
+    
+    const availableDates = dates.filter(d => {
+      const dateObj = new Date(d + 'T00:00:00');
+      return dateObj > today && dateObj <= maxDate;
+    });
+    
+    if (availableDates.length === 0) {
+      el.innerHTML = '<p style="color:var(--gray)">No hay fechas disponibles (solo se puede agendar desde mañana hasta 15 días)</p>';
+      return;
+    }
+    
+    el.innerHTML = '<div class="dates-grid">' + availableDates.map(d => {
+      const dateObj = new Date(d + 'T00:00:00');
+      const label = dateObj.toLocaleDateString('es-CO', { weekday:'short', day:'numeric', month:'short' });
       return `<button class="date-btn" onclick="selectDate('${d}', this)">${label}</button>`;
     }).join('') + '</div>';
   } catch (e2) {
@@ -910,22 +1489,28 @@ async function loadBookingDates() {
 }
 
 function selectDate(d, el) {
-  booking.date = d;
+  // Asegurar que la fecha está en formato YYYY-MM-DD
+  const formattedDate = d.split('T')[0]; // Si viene con T, limpiar
+  booking.date = formattedDate;
+  booking.startTime = null;
   document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('selected'));
   el.classList.add('selected');
+  console.log('Fecha seleccionada:', booking.date);
 }
 
 async function loadBookingSlots() {
   const el = document.getElementById('bookingSlots');
   if (!booking.date) {
-    el.innerHTML = '<p style="color:var(--error)">Selecciona una fecha primero</p>'; return;
+    el.innerHTML = '<p style="color:var(--error)">Selecciona una fecha primero</p>'; 
+    return;
   }
   el.innerHTML = '<div class="loading-state"><span class="spinner"></span> Cargando...</div>';
   const ids = booking.serviceIds.map(id => 'serviceIds=' + id).join('&');
   try {
     const slots = await api('GET', `/api/appointments/employees/${booking.employeeId}/slots?date=${booking.date}&${ids}`);
     if (!slots.length) {
-      el.innerHTML = '<p style="color:var(--gray)">Sin horarios disponibles para esta fecha</p>'; return;
+      el.innerHTML = '<p style="color:var(--gray)">Sin horarios disponibles para esta fecha</p>'; 
+      return;
     }
     el.innerHTML = '<div class="slots-grid">' + slots.map(s => {
       const label = s.startTime.substring(0,5) + ' – ' + s.endTime.substring(0,5);
@@ -967,23 +1552,41 @@ async function loadBookingSummary() {
 }
 
 async function confirmAppointment() {
-  if (!token) {
-    toast('Debes iniciar sesión para confirmar una cita', '');
-    showPage('login'); return;
+  // Validaciones previas
+  if (!booking.employeeId) {
+    toast('No hay barbero seleccionado', 'error');
+    return;
   }
+  if (!booking.date) {
+    toast('No hay fecha seleccionada', 'error');
+    return;
+  }
+  if (!booking.startTime) {
+    toast('No hay horario seleccionado', 'error');
+    return;
+  }
+  if (!booking.serviceIds || booking.serviceIds.length === 0) {
+    toast('No hay servicios seleccionados', 'error');
+    return;
+  }
+  
   const errEl = document.getElementById('confirmError');
   const btn   = document.getElementById('btnConfirm');
   errEl.style.display = 'none';
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Confirmando...';
 
+  // Mostrar en consola lo que se está enviando
+  const payload = {
+    employeeId: booking.employeeId,
+    date: booking.date,
+    startTime: booking.startTime,
+    serviceIds: booking.serviceIds
+  };
+  console.log('Enviando confirmación:', payload);
+
   try {
-    const data = await api('POST', '/api/appointments/confirm', {
-      employeeId: booking.employeeId,
-      date:       booking.date,
-      startTime:  booking.startTime,
-      serviceIds: booking.serviceIds
-    });
+    const data = await api('POST', '/api/appointments/confirm', payload);
     toast('¡Cita confirmada! ID: ' + data.appointmentId, 'success');
     document.getElementById('bookingSummary').innerHTML = `
       <div class="summary-box" style="border-color:rgba(29,158,117,0.4)">
@@ -996,11 +1599,14 @@ async function confirmAppointment() {
         <div class="summary-row"><span class="label">Total</span><span class="val summary-total">$${parseFloat(data.totalPrice).toLocaleString('es-CO')}</span></div>
       </div>`;
     btn.style.display = 'none';
-    resetBooking();
   } catch (e2) {
-    errEl.textContent = e2.message || 'Error al confirmar la cita';
+    console.error('Error detallado:', e2);
+    // Mostrar mensaje de error más específico
+    const errorMsg = e2.message || JSON.stringify(e2) || 'Error desconocido';
+    errEl.textContent = 'Error al confirmar: ' + errorMsg;
     errEl.style.display = 'block';
-    btn.disabled = false; btn.textContent = 'Confirmar cita';
+    btn.disabled = false; 
+    btn.textContent = 'Confirmar cita';
   }
 }
 
@@ -1013,6 +1619,14 @@ function goStep(n) {
     if (cur === 3 && !booking.date)                { toast('Selecciona una fecha', '');            return; }
     if (cur === 4 && !booking.startTime)           { toast('Selecciona un horario', '');           return; }
   }
+  
+  // Si retrocedemos, limpiar datos de pasos siguientes
+  if (n < cur) {
+    if (n <= 2) booking.employeeId = null;
+    if (n <= 3) booking.date = null;
+    if (n <= 4) booking.startTime = null;
+  }
+  
   document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel' + n).classList.add('active');
   for (let i = 1; i <= 5; i++) {
@@ -1026,8 +1640,41 @@ function goStep(n) {
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
+// Guardar datos de formulario en localStorage (persistencia)
+function saveFormData() {
+  const forms = ['regNames', 'regLastNames', 'regEmail', 'regPhone'];
+  forms.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) localStorage.setItem(`form_${id}`, el.value);
+  });
+}
+
+function loadFormData() {
+  const forms = ['regNames', 'regLastNames', 'regEmail', 'regPhone'];
+  forms.forEach(id => {
+    const saved = localStorage.getItem(`form_${id}`);
+    if (saved) {
+      const el = document.getElementById(id);
+      if (el) el.value = saved;
+    }
+  });
+}
+
+// Al inicio, asegurar que no haya datos residuales
+document.addEventListener('DOMContentLoaded', () => {
+  clearAllForms();
+});
+
+// Guardar datos al cambiar inputs
+document.addEventListener('input', (e) => {
+  if (e.target && e.target.id && e.target.id.startsWith('reg')) {
+    localStorage.setItem(`form_${e.target.id}`, e.target.value);
+  }
+});
+
 updateNav();
 loadHomeServices();
+loadFormData();
 </script>
 </body>
 </html>
