@@ -12,4 +12,5 @@ public interface AvailabilityRepositoryPort {
     List<LocalDate> findAvailableDatesByEmployee(Long employeeId, LocalDate from, LocalDate to);
     List<LocalDate> findAvailableDatesByService(Long serviceId, LocalDate from, LocalDate to);
     boolean existsByEmployeeIdAndDateAndStartTime(Long employeeId, LocalDate date, LocalTime startTime);
+    List<Availability> findByEmployeeIdAndDateBetween(Long employeeId, LocalDate from, LocalDate to);
 }

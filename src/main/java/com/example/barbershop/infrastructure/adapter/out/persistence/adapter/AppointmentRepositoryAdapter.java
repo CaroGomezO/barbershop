@@ -92,4 +92,9 @@ public class AppointmentRepositoryAdapter implements AppointmentRepositoryPort {
             .build();
     }
 
+    @Override
+    public List<Appointment> findByEmployeeIdAndDateBetween(Long employeeId, LocalDate from, LocalDate to) {
+        return jpaRepository.findConfirmedByEmployeeAndDateRange(employeeId, from, to)
+                .stream().map(this::toDomain).collect(Collectors.toList());
+    }
 }

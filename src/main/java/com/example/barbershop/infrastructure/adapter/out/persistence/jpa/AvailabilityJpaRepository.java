@@ -13,8 +13,7 @@ import com.example.barbershop.infrastructure.adapter.out.persistence.entity.Avai
 public interface AvailabilityJpaRepository extends JpaRepository<AvailabilityEntity, Long> {
     List<AvailabilityEntity> findByEmployeeIdAndDate(Long employeeId, LocalDate date);
 
-    boolean existsByEmployeeIdAndDateAndStartTime(
-            Long employeeId, LocalDate date, LocalTime startTime);
+    boolean existsByEmployeeIdAndDateAndStartTime(Long employeeId, LocalDate date, LocalTime startTime);
 
     @Query("""
         SELECT DISTINCT a.date
@@ -48,5 +47,7 @@ public interface AvailabilityJpaRepository extends JpaRepository<AvailabilityEnt
             @Param("from") LocalDate from,
             @Param("to") LocalDate to
     );
+
+    List<AvailabilityEntity> findByEmployeeIdAndDateBetween(Long employeeId, LocalDate from, LocalDate to);
 
 }

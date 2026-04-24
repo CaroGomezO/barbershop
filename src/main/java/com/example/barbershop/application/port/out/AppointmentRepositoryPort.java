@@ -10,4 +10,5 @@ public interface AppointmentRepositoryPort {
     Appointment save(Appointment appointment);
     boolean existsConfirmedOverlap(Long employeeId, LocalDate date, LocalTime startTime, LocalTime endTime);
     List<Appointment> findByClientEmail(String email);
+    List<Appointment> findByEmployeeIdAndDateBetween(Long employeeId, LocalDate from, LocalDate to);
 }

@@ -65,4 +65,10 @@ public class AvailabilityRepositoryAdapter implements AvailabilityRepositoryPort
                 .endTime(e.getEndTime())
                 .build();
     }
+
+    @Override
+    public List<Availability> findByEmployeeIdAndDateBetween(Long employeeId, LocalDate from, LocalDate to) {
+        return jpaRepository.findByEmployeeIdAndDateBetween(employeeId, from, to)
+                .stream().map(this::toDomain).collect(Collectors.toList());
+    }
 }

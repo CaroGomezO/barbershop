@@ -30,4 +30,17 @@ public interface AppointmentJpaRepository extends JpaRepository<AppointmentEntit
             @Param("endTime") LocalTime endTime
     );
 
+    @Query("""
+        SELECT a FROM AppointmentEntity a
+        WHERE a.employee.id = :employeeId
+          AND a.date BETWEEN :from AND :to
+          AND a.status = 'CONFIRMADA'
+    """)
+
+    List<AppointmentEntity> findConfirmedByEmployeeAndDateRange (
+            @Param("employeeId") Long employeeId,
+            @Param("from") LocalDate from,
+            @Param("to") LocalDate to
+    );
+
 }

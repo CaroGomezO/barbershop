@@ -80,4 +80,9 @@ public class EmployeeRepositoryAdapter implements EmployeeRepositoryPort {
                 .orElseThrow(() -> new IllegalStateException(
                         "Empleado no encontrado: " + id));
     }
+
+    @Override
+    public Optional<Employee> findById(Long id) {
+        return jpaRepository.findById(id).map(this::toDomain);
+    }
 }

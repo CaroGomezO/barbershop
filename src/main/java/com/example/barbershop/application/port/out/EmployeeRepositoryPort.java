@@ -11,4 +11,5 @@ public interface EmployeeRepositoryPort {
     Optional<Employee> findByUserEmail(String email);
     boolean existsByDocumentNumber(String documentNumber);
     List<Employee> findActiveEmployeesByServiceWithAvailability(Long serviceId, LocalDate from, LocalDate to);
+    Optional<Employee> findById(Long id);
 }
