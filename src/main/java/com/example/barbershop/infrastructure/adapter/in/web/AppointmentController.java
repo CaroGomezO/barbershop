@@ -8,6 +8,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,12 +20,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.barbershop.application.dto.AppointmentSummaryResponse;
 import com.example.barbershop.application.dto.AvailableDatesResponse;
+import com.example.barbershop.application.dto.CancelAppointmentRequest;
+import com.example.barbershop.application.dto.CancelAppointmentResponse;
 import com.example.barbershop.application.dto.ConfirmAppointmentRequest;
 import com.example.barbershop.application.dto.ConfirmAppointmentResponse;
 import com.example.barbershop.application.dto.EmployeeAvailabilityResponse;
 import com.example.barbershop.application.dto.ServiceAvailabilityResponse;
 import com.example.barbershop.application.dto.SlotResponse;
 import com.example.barbershop.application.port.in.AppointmentUseCase;
+import com.example.barbershop.application.port.out.UserRepositoryPort;
+import com.example.barbershop.application.security.UserContext;
+import com.example.barbershop.domain.model.User;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
@@ -34,6 +41,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AppointmentController {
     private final AppointmentUseCase appointmentUseCase;
+    private final UserRepositoryPort userRepository;
 
     @GetMapping("/services")
     public ResponseEntity<List<ServiceAvailabilityResponse>> getServices() {
@@ -79,4 +87,24 @@ public class AppointmentController {
                 .body(appointmentUseCase.confirm(
                         authentication.getName(), request));
     }
+
+    @PostMapping("/cancel")
+    public ResponseEntity<CancelAppointmentResponse> cancel(
+            @Valid @RequestBody CancelAppointmentRequest request) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        User user = userRepository
+            .findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("Usuario NO encontrado"));
+
+        UserContext context = UserContext.builder()
+                                        .userId(user.getId())
+                                        .role(user.getRole())
+                                        .build();  
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(appointmentUseCase.cancel(request, context));
+    }
+
 }

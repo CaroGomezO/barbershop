@@ -108,6 +108,16 @@ CREATE TABLE appointment_services (
     CONSTRAINT fk_as_service FOREIGN KEY (service_id) REFERENCES services(id)
 );
 
+-- Cancelaciones
+CREATE TABLE cancellations (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    appointment_id BIGINT NOT NULL REFERENCES appointments(id) ON DELETE CASCADE,
+    cancellation_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    reason TEXT,
+    cancelled_by BIGINT NOT NULL REFERENCES roles(id) ON DELETE CASCADE
+);
+
 INSERT INTO services (name, description, price, duration_minutes) VALUES 
 ('Corte de Cabello Masculino', 'Corte moderno o clásico con asesoría de imagen y acabado con pomada', 15000, 30),
 ('Corte con Lavado y Peinado', 'Corte de cabello más lavado profundo con masaje capilar y peinado', 20000, 45),

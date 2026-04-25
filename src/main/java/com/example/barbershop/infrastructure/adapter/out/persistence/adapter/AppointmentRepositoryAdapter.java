@@ -3,6 +3,7 @@ package com.example.barbershop.infrastructure.adapter.out.persistence.adapter;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -96,5 +97,13 @@ public class AppointmentRepositoryAdapter implements AppointmentRepositoryPort {
     public List<Appointment> findByEmployeeIdAndDateBetween(Long employeeId, LocalDate from, LocalDate to) {
         return jpaRepository.findConfirmedByEmployeeAndDateRange(employeeId, from, to)
                 .stream().map(this::toDomain).collect(Collectors.toList());
+    }
+
+
+    @Override
+    public Optional<Appointment> findById(Long appointmentId) {
+        Optional<AppointmentEntity> appointmentEntity = jpaRepository
+            .findById(appointmentId);
+        return  appointmentEntity.map(this::toDomain);
     }
 }

@@ -9,6 +9,11 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.example.barbershop.domain.exception.AppointmentAlreadyCancelledException;
+import com.example.barbershop.domain.exception.AppointmentNotFoundException;
+import com.example.barbershop.domain.exception.AppointmentNotOwnedByUserException;
+import com.example.barbershop.domain.exception.BarberCancellationReasonNotProvidedException;
+import com.example.barbershop.domain.exception.CancellationLimitExceededException;
 import com.example.barbershop.domain.exception.DocumentAlreadyExistsException;
 import com.example.barbershop.domain.exception.EmailAlreadyExistsException;
 import com.example.barbershop.domain.exception.EmployeeNotFoundException;
@@ -32,7 +37,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({EmailAlreadyExistsException.class,
                        DocumentAlreadyExistsException.class,
                        SlotNotAvailableException.class,
-                       ServiceNotAvailableException.class})
+                       ServiceNotAvailableException.class,
+                        AppointmentAlreadyCancelledException.class})
     public ResponseEntity<Map<String, String>> handleConflict(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("error", ex.getMessage()));
@@ -40,14 +46,18 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({PasswordMismatchException.class,
                        SamePasswordException.class,
-                       InvalidScheduleException.class})
+                       InvalidScheduleException.class,
+                        CancellationLimitExceededException.class,
+                        AppointmentNotOwnedByUserException.class,
+                        BarberCancellationReasonNotProvidedException.class})
     public ResponseEntity<Map<String, String>> handleBadRequest(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("error", ex.getMessage()));
     }
 
     @ExceptionHandler({ServiceNotFoundException.class,
-                       EmployeeNotFoundException.class})
+                        EmployeeNotFoundException.class,
+                        AppointmentNotFoundException.class})
     public ResponseEntity<Map<String, String>> handleNotFound(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("error", ex.getMessage()));
