@@ -9,4 +9,10 @@ public interface ServiceRepositoryPort {
     List<Service> findAll();
     Optional<Service> findById(Long id);
     List<Service> findAllById(List<Long> ids);
+
+    Service save(Service service);
+    void deleteById(Long id);
+    boolean existsById(Long id);
+    boolean existsByName(String name);
+    Optional<Service> findByName(String name);
 }

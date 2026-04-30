@@ -7,10 +7,13 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import com.example.barbershop.infrastructure.adapter.out.persistence.entity.AppointmentEntity;
 
+@Repository
 public interface AppointmentJpaRepository extends JpaRepository<AppointmentEntity, Long> {
+    
     List<AppointmentEntity> findByClientUserEmail(String email);
 
     @Query("""
@@ -22,7 +25,6 @@ public interface AppointmentJpaRepository extends JpaRepository<AppointmentEntit
           AND a.startTime < :endTime
           AND a.endTime > :startTime
     """)
-    
     boolean existsConfirmedOverlap(
             @Param("employeeId") Long employeeId,
             @Param("date") LocalDate date,
@@ -36,11 +38,17 @@ public interface AppointmentJpaRepository extends JpaRepository<AppointmentEntit
           AND a.date BETWEEN :from AND :to
           AND a.status = 'CONFIRMADA'
     """)
-
-    List<AppointmentEntity> findConfirmedByEmployeeAndDateRange (
+    List<AppointmentEntity> findConfirmedByEmployeeAndDateRange(
             @Param("employeeId") Long employeeId,
             @Param("from") LocalDate from,
             @Param("to") LocalDate to
     );
 
+    List<AppointmentEntity> findByDate(LocalDate date);
+
+    List<AppointmentEntity> findByStatus(String status);
+
+    List<AppointmentEntity> findByDateBetween(LocalDate startDate, LocalDate endDate);
+
+    List<AppointmentEntity> findByEmployeeId(Long employeeId);
 }

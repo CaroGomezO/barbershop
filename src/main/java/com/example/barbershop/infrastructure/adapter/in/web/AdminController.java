@@ -14,9 +14,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.barbershop.application.dto.BarberScheduleResponse;
+import com.example.barbershop.application.dto.CreateServiceRequest;
 import com.example.barbershop.application.dto.RegisterEmployeeRequest;
 import com.example.barbershop.application.dto.RegisterEmployeeResponse;
+import com.example.barbershop.application.dto.ServiceResponse;
 import com.example.barbershop.application.port.in.BarberScheduleUseCase;
+import com.example.barbershop.application.port.in.ManageServicesUseCase;
 import com.example.barbershop.application.port.in.RegisterEmployeeUseCase;
 import com.example.barbershop.application.port.out.ServiceRepositoryPort;
 
@@ -29,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 public class AdminController {
     private final RegisterEmployeeUseCase registerEmployeeUseCase;
     private final ServiceRepositoryPort serviceRepository;
+    private final ManageServicesUseCase manageServicesUseCase;
     private final BarberScheduleUseCase barberScheduleUseCase;
 
     @PostMapping("/employees")
@@ -44,5 +48,12 @@ public class AdminController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
         return ResponseEntity.ok(barberScheduleUseCase.getBarberSchedule(employeeId, from, to));
+    }
+    
+    @PostMapping("/services")
+    public ResponseEntity<ServiceResponse> createService(
+            @Valid @RequestBody CreateServiceRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(manageServicesUseCase.createService(request));
     }
 }

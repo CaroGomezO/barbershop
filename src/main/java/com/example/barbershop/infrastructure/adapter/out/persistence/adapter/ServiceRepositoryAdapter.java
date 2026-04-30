@@ -21,7 +21,8 @@ public class ServiceRepositoryAdapter implements ServiceRepositoryPort {
     @Override
     public List<Service> findAll() {
         return jpaRepository.findAll().stream()
-                .map(this::toDomain).collect(Collectors.toList());
+                .map(this::toDomain)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -32,22 +33,63 @@ public class ServiceRepositoryAdapter implements ServiceRepositoryPort {
     @Override
     public List<Service> findAllById(List<Long> ids) {
         return jpaRepository.findAllById(ids).stream()
-                .map(this::toDomain).collect(Collectors.toList());
+                .map(this::toDomain)
+                .collect(Collectors.toList());
     }
 
-    public Service toDomain(ServiceEntity e) {
+    @Override
+    public Service save(Service service) {
+        ServiceEntity entity = toEntity(service);
+        ServiceEntity saved = jpaRepository.save(entity);
+        return toDomain(saved);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        jpaRepository.deleteById(id);
+    }
+
+    @Override
+    public boolean existsById(Long id) {
+        return jpaRepository.existsById(id);
+    }
+
+    @Override
+    public boolean existsByName(String name) {
+        return jpaRepository.existsByNameIgnoreCase(name);
+    }
+
+    @Override
+    public Optional<Service> findByName(String name) {
+        return jpaRepository.findByNameIgnoreCase(name).map(this::toDomain);
+    }
+
+    public Service toDomain(ServiceEntity entity) {
+        if (entity == null) return null;
+        
         return Service.builder()
-                .id(e.getId())
-                .name(e.getName())
-                .description(e.getDescription())
-                .price(e.getPrice())
-                .durationMinutes(e.getDurationMinutes())
+                .id(entity.getId())
+                .name(entity.getName())
+                .description(entity.getDescription())
+                .price(entity.getPrice())
+                .durationMinutes(entity.getDurationMinutes())
+                .build();
+    }
+
+    public ServiceEntity toEntity(Service service) {
+        if (service == null) return null;
+        
+        return ServiceEntity.builder()
+                .id(service.getId())
+                .name(service.getName())
+                .description(service.getDescription())
+                .price(service.getPrice())
+                .durationMinutes(service.getDurationMinutes())
                 .build();
     }
 
     public ServiceEntity toEntity(Long id) {
         return jpaRepository.findById(id)
-                .orElseThrow(() -> new IllegalStateException(
-                        "Servicio no encontrado: " + id));
+                .orElseThrow(() -> new IllegalStateException("Servicio no encontrado: " + id));
     }
 }

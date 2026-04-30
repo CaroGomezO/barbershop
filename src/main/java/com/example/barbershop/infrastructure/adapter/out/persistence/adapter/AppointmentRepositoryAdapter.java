@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import com.example.barbershop.application.port.out.AppointmentRepositoryPort;
 import com.example.barbershop.domain.model.Appointment;
 import com.example.barbershop.domain.model.AppointmentDetail;
+import com.example.barbershop.domain.model.AppointmentStatus;
 import com.example.barbershop.infrastructure.adapter.out.persistence.entity.AppointmentDetailEntity;
 import com.example.barbershop.infrastructure.adapter.out.persistence.entity.AppointmentEntity;
 import com.example.barbershop.infrastructure.adapter.out.persistence.entity.ClientEntity;
@@ -45,7 +46,6 @@ public class AppointmentRepositoryAdapter implements AppointmentRepositoryPort {
             .totalPrice(appointment.getTotalPrice())
             .build();
 
-
         AppointmentEntity saved = jpaRepository.save(entity);
 
         Set<AppointmentDetailEntity> detailEntities = appointment.getDetails().stream()
@@ -73,24 +73,24 @@ public class AppointmentRepositoryAdapter implements AppointmentRepositoryPort {
     }
 
     private Appointment toDomain(AppointmentEntity e) {
-    return Appointment.builder()
-            .id(e.getId())
-            .client(clientAdapter.toDomain(e.getClient()))
-            .employee(employeeAdapter.toDomain(e.getEmployee()))
-            .date(e.getDate())
-            .startTime(e.getStartTime())
-            .endTime(e.getEndTime())
-            .status(e.getStatus())
-            .totalPrice(e.getTotalPrice())
-            .details(e.getDetails().stream()
-                    .map(d -> AppointmentDetail.builder()
-                            .id(d.getId())
-                            .service(serviceAdapter.toDomain(d.getService()))
-                            .price(d.getPrice())
-                            .durationMinutes(d.getDurationMinutes())
-                            .build())
-                    .collect(Collectors.toSet()))
-            .build();
+        return Appointment.builder()
+                .id(e.getId())
+                .client(clientAdapter.toDomain(e.getClient()))
+                .employee(employeeAdapter.toDomain(e.getEmployee()))
+                .date(e.getDate())
+                .startTime(e.getStartTime())
+                .endTime(e.getEndTime())
+                .status(e.getStatus())
+                .totalPrice(e.getTotalPrice())
+                .details(e.getDetails().stream()
+                        .map(d -> AppointmentDetail.builder()
+                                .id(d.getId())
+                                .service(serviceAdapter.toDomain(d.getService()))
+                                .price(d.getPrice())
+                                .durationMinutes(d.getDurationMinutes())
+                                .build())
+                        .collect(Collectors.toSet()))
+                .build();
     }
 
     @Override
@@ -99,11 +99,43 @@ public class AppointmentRepositoryAdapter implements AppointmentRepositoryPort {
                 .stream().map(this::toDomain).collect(Collectors.toList());
     }
 
-
     @Override
     public Optional<Appointment> findById(Long appointmentId) {
         Optional<AppointmentEntity> appointmentEntity = jpaRepository
             .findById(appointmentId);
-        return  appointmentEntity.map(this::toDomain);
+        return appointmentEntity.map(this::toDomain);
+    }
+
+    @Override
+    public List<Appointment> findByDate(LocalDate date) {
+        return jpaRepository.findByDate(date)
+                .stream().map(this::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Appointment> findByStatus(AppointmentStatus status) {
+        return jpaRepository.findByStatus(status.name())
+                .stream().map(this::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Appointment> findByDateBetween(LocalDate startDate, LocalDate endDate) {
+        return jpaRepository.findByDateBetween(startDate, endDate)
+                .stream().map(this::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Appointment> findByEmployeeId(Long employeeId) {
+        return jpaRepository.findByEmployeeId(employeeId)
+                .stream().map(this::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean existsById(Long id) {
+        return jpaRepository.existsById(id);
     }
 }
