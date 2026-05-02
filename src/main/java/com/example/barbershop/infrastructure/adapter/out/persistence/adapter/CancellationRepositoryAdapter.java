@@ -21,9 +21,8 @@ public class CancellationRepositoryAdapter implements CancellationRepositoryPort
     @Override
     public Cancellation save(Cancellation cancellation) {
         CancellationEntity entity = CancellationEntity.builder()
-            .user(null)  // TODO: Necesitas convertir User a UserEntity
-            .appointment(null)  // TODO: Necesitas convertir Appointment a AppointmentEntity
-            .cancellationDate(cancellation.getCancellationDate())
+            .user(null)  
+            .appointment(null)  
             .reason(cancellation.getReason())
             .cancelledBy(cancellation.getRole() != null ? (long) cancellation.getRole().ordinal() + 1 : 1L)
             .build();
