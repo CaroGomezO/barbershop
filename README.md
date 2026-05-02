@@ -1,8 +1,6 @@
 # Sistema de Gestión de Citas para una Barbería
 
 ## Tabla de Contenido
-- [Sistema de Gestión de Citas para una Barbería](#sistema-de-gestión-de-citas-para-una-barbería)
-  - [Tabla de Contenido](#tabla-de-contenido)
   - [Contexto del Negocio](#contexto-del-negocio)
   - [Necesidades del Negocio](#necesidades-del-negocio)
   - [Problema a Resolver](#problema-a-resolver)
