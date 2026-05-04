@@ -5,10 +5,12 @@ import java.time.LocalTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.example.barbershop.domain.model.AppointmentStatus;
 import com.example.barbershop.infrastructure.adapter.out.persistence.entity.AppointmentEntity;
 
 @Repository
@@ -43,6 +45,10 @@ public interface AppointmentJpaRepository extends JpaRepository<AppointmentEntit
             @Param("from") LocalDate from,
             @Param("to") LocalDate to
     );
+
+    @Modifying
+    @Query("UPDATE AppointmentEntity a SET a.status = :status WHERE a.id = :id")
+    void updateStatus(@Param("id") Long id, @Param("status") AppointmentStatus status);
 
     List<AppointmentEntity> findByDate(LocalDate date);
 

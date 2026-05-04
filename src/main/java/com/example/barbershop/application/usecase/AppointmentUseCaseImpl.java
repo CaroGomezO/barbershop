@@ -300,6 +300,8 @@ public class AppointmentUseCaseImpl implements AppointmentUseCase {
                 }
 
                 appointment.setStatus(AppointmentStatus.CANCELADA);
+                appointmentRepository.save(appointment);
+
 
                 Cancellation cancellation = saveCancellation(context, appointment, request);
 
