@@ -49,11 +49,11 @@ public class SecurityConfig {
                     "/api/appointments/summary"
                 ).permitAll()
                 // Role-based endpoints
-                .requestMatchers("/api/admin/**").hasRole("ADMINISTRADOR")
-                .requestMatchers("/api/employee/**").hasRole("BARBERO")
-                .requestMatchers("/api/appointments/confirm").hasRole("CLIENTE")
-
-                .requestMatchers("/api/appointments/cancel").hasAnyRole("CLIENTE", "BARBERO")
+                .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMINISTRADOR")
+                .requestMatchers("/api/employee/**").hasAuthority("ROLE_BARBERO")
+                .requestMatchers("/api/appointments/confirm").hasAuthority("ROLE_CLIENTE")
+                .requestMatchers("/api/appointments/cancel").hasAnyAuthority("ROLE_CLIENTE", "ROLE_BARBERO")
+                .requestMatchers("/api/appointments/my").hasAuthority("ROLE_CLIENTE")
                 // All other requests require authentication
                 .anyRequest().authenticated()
             )

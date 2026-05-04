@@ -27,6 +27,7 @@ import com.example.barbershop.application.dto.ConfirmAppointmentResponse;
 import com.example.barbershop.application.dto.EmployeeAvailabilityResponse;
 import com.example.barbershop.application.dto.ServiceAvailabilityResponse;
 import com.example.barbershop.application.dto.SlotResponse;
+import com.example.barbershop.application.dto.AppointmentResponse;
 import com.example.barbershop.application.port.in.AppointmentUseCase;
 import com.example.barbershop.application.port.out.UserRepositoryPort;
 import com.example.barbershop.application.security.UserContext;
@@ -105,6 +106,10 @@ public class AppointmentController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(appointmentUseCase.cancel(request, context));
+    }
+    @GetMapping("/my")
+    public ResponseEntity<List<AppointmentResponse>> getMyCitas(Authentication authentication) {
+        return ResponseEntity.ok(appointmentUseCase.getMyAppointments(authentication.getName()));
     }
 
 }
