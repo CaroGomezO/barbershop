@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.security.access.AccessDeniedException;
 
+import com.example.barbershop.application.dto.AppointmentResponse;
 import com.example.barbershop.application.dto.AppointmentSummaryResponse;
 import com.example.barbershop.application.dto.AvailableDatesResponse;
 import com.example.barbershop.application.dto.CancelAppointmentRequest;
@@ -305,6 +306,8 @@ public class AppointmentUseCaseImpl implements AppointmentUseCase {
                 return buildResponse(cancellation, request, context);
         }
 
+        
+
         private void validateCancellationLimit(UserContext context, LocalDateTime from, LocalDateTime to) {
                 Long cancellations = cancellationRepository
                                 .countByUserIdAndCancellationDateBetween(context.getUserId(), from, to);
@@ -370,4 +373,20 @@ public class AppointmentUseCaseImpl implements AppointmentUseCase {
                                 .build();
         }
 
+       @Override
+        public List<AppointmentResponse> getMyAppointments(String email) {
+                return appointmentRepository.findByClientEmail(email).stream()
+                        .map(a -> {
+                        AppointmentResponse r = new AppointmentResponse();
+                        r.setId(a.getId());
+                        r.setEmployeeName(a.getEmployee().getNames() + " " + a.getEmployee().getLastNames());
+                        r.setDate(a.getDate().toString());
+                        r.setStartTime(a.getStartTime().toString());
+                        r.setEndTime(a.getEndTime().toString());
+                        r.setStatus(a.getStatus().name());
+                        r.setTotalPrice(a.getTotalPrice().toString());
+                        return r;
+                        })
+                        .collect(Collectors.toList());
+        }
 }

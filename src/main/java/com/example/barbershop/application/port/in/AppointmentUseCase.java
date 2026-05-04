@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+import com.example.barbershop.application.dto.AppointmentResponse;
 import com.example.barbershop.application.dto.AppointmentSummaryResponse;
 import com.example.barbershop.application.dto.AvailableDatesResponse;
 import com.example.barbershop.application.dto.CancelAppointmentRequest;
@@ -21,6 +22,7 @@ public interface AppointmentUseCase {
     AvailableDatesResponse getAvailableDates(Long employeeId);
     List<SlotResponse> getAvailableSlots(Long employeeId, LocalDate date, List<Long> serviceIds);
     AppointmentSummaryResponse getSummary(Long employeeId, LocalDate date, LocalTime startTime, List<Long> serviceIds);
+    List<AppointmentResponse> getMyAppointments(String email); 
     ConfirmAppointmentResponse confirm(String clientEmail, ConfirmAppointmentRequest request);
     CancelAppointmentResponse cancel(CancelAppointmentRequest request, UserContext context);
 }
