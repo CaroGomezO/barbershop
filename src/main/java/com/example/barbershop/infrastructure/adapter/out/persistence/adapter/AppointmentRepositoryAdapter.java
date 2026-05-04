@@ -32,6 +32,11 @@ public class AppointmentRepositoryAdapter implements AppointmentRepositoryPort {
 
     @Override
     public Appointment save(Appointment appointment) {
+        if (appointment.getId() != null) {
+            jpaRepository.updateStatus(appointment.getId(), appointment.getStatus());
+            return appointment;
+        }
+
         ClientEntity clientEntity = clientJpaRepository
                 .findById(appointment.getClient().getId())
                 .orElseThrow(() -> new IllegalStateException("Cliente no encontrado"));
@@ -60,7 +65,6 @@ public class AppointmentRepositoryAdapter implements AppointmentRepositoryPort {
         saved.setDetails(detailEntities);
         return toDomain(jpaRepository.save(saved));
     }
-
     @Override
     public boolean existsConfirmedOverlap(Long employeeId, LocalDate date, LocalTime startTime, LocalTime endTime) {
         return jpaRepository.existsConfirmedOverlap(employeeId, date, startTime, endTime);
