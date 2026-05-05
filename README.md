@@ -1,6 +1,8 @@
 # Sistema de Gestión de Citas para una Barbería
 
 ## Tabla de Contenido
+- [Sistema de Gestión de Citas para una Barbería](#sistema-de-gestión-de-citas-para-una-barbería)
+  - [Tabla de Contenido](#tabla-de-contenido)
   - [Contexto del Negocio](#contexto-del-negocio)
   - [Necesidades del Negocio](#necesidades-del-negocio)
   - [Problema a Resolver](#problema-a-resolver)
@@ -89,10 +91,10 @@ La barbería no cuenta con una herramienta digital para gestionar reservas. Esto
 - Agendar cita (cliente selecciona servicio, fecha, barbero y hora)
 
 
-### Sprint 2
-- Agregar servicios al sistema
-  
-- Cancelar cita
+### Sprint 2 
+- Cancelar cita para barbero
+
+- Cancelar cita para cliente
   
 - Visualizar jornada laboral del barbero
 
