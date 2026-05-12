@@ -35,8 +35,8 @@ import com.example.barbershop.domain.exception.AppointmentNotOwnedByUserExceptio
 import com.example.barbershop.domain.exception.BarberCancellationReasonNotProvidedException;
 import com.example.barbershop.domain.exception.CancellationLimitExceededException;
 import com.example.barbershop.domain.exception.EmployeeNotFoundException;
-import com.example.barbershop.domain.exception.ServiceNotFoundException;
 import com.example.barbershop.domain.exception.ServiceNotAvailableException;
+import com.example.barbershop.domain.exception.ServiceNotFoundException;
 import com.example.barbershop.domain.exception.SlotNotAvailableException;
 import com.example.barbershop.domain.model.Appointment;
 import com.example.barbershop.domain.model.AppointmentDetail;
@@ -314,7 +314,7 @@ public class AppointmentUseCaseImpl implements AppointmentUseCase {
                 Long cancellations = cancellationRepository
                                 .countByUserIdAndCancellationDateBetween(context.getUserId(), from, to);
 
-                if (cancellations > (long) PERMITED_CANCELLATIONS_PER_MONTH) {
+                if (cancellations >= (long) PERMITED_CANCELLATIONS_PER_MONTH) {
                         throw new CancellationLimitExceededException();
                 }
         }
