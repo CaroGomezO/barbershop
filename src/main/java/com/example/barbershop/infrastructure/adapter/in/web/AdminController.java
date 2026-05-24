@@ -1,13 +1,16 @@
 package com.example.barbershop.infrastructure.adapter.in.web;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,9 +21,12 @@ import com.example.barbershop.application.dto.CreateServiceRequest;
 import com.example.barbershop.application.dto.RegisterEmployeeRequest;
 import com.example.barbershop.application.dto.RegisterEmployeeResponse;
 import com.example.barbershop.application.dto.ServiceResponse;
+import com.example.barbershop.application.dto.WorkScheduleRequest;
+import com.example.barbershop.application.dto.WorkScheduleResponse;
 import com.example.barbershop.application.port.in.BarberScheduleUseCase;
 import com.example.barbershop.application.port.in.ManageServicesUseCase;
 import com.example.barbershop.application.port.in.RegisterEmployeeUseCase;
+import com.example.barbershop.application.port.in.WorkScheduleUseCase;
 import com.example.barbershop.application.port.out.ServiceRepositoryPort;
 
 import jakarta.validation.Valid;
@@ -34,6 +40,7 @@ public class AdminController {
     private final ServiceRepositoryPort serviceRepository;
     private final ManageServicesUseCase manageServicesUseCase;
     private final BarberScheduleUseCase barberScheduleUseCase;
+    private final WorkScheduleUseCase workScheduleUseCase;
 
     @PostMapping("/employees")
     public ResponseEntity<RegisterEmployeeResponse> registerEmployee(
@@ -55,5 +62,32 @@ public class AdminController {
             @Valid @RequestBody CreateServiceRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(manageServicesUseCase.createService(request));
+    }
+
+    @PostMapping("/employees/{employeeId}/schedules")
+    public ResponseEntity<WorkScheduleResponse> createSchedule(
+            @PathVariable Long employeeId,
+            @Valid @RequestBody WorkScheduleRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(workScheduleUseCase.create(employeeId, request));
+    }
+
+    @PutMapping("/employees/schedules/{scheduleId}")
+    public ResponseEntity<WorkScheduleResponse> updateSchedule(
+            @PathVariable Long scheduleId,
+            @Valid @RequestBody WorkScheduleRequest request) {
+        return ResponseEntity.ok(workScheduleUseCase.update(scheduleId, request));
+    }
+
+    @DeleteMapping("/employees/schedules/{scheduleId}")
+    public ResponseEntity<Void> deleteSchedule(@PathVariable Long scheduleId) {
+        workScheduleUseCase.delete(scheduleId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/employees/{employeeId}/schedules")
+    public ResponseEntity<List<WorkScheduleResponse>> getSchedules(
+            @PathVariable Long employeeId) {
+        return ResponseEntity.ok(workScheduleUseCase.findByEmployee(employeeId));
     }
 }

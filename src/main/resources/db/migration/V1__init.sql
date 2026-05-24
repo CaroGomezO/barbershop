@@ -118,6 +118,21 @@ CREATE TABLE cancellations (
     cancelled_by BIGINT NOT NULL REFERENCES roles(id) ON DELETE CASCADE
 );
 
+-- Jornadas laborales (Configuradas por el admin)
+CREATE TABLE work_schedules (
+    id BIGSERIAL PRIMARY KEY,
+    employee_id BIGINT NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
+    day_of_week VARCHAR(10) NOT NULL
+                    CHECK (day_of_week IN (
+                        'MONDAY','TUESDAY','WEDNESDAY',
+                        'THURSDAY','FRIDAY','SATURDAY','SUNDAY'
+                    )),
+    start_time  TIME NOT NULL,
+    end_time    TIME NOT NULL,
+    CONSTRAINT chk_ws_time CHECK (end_time > start_time),
+    CONSTRAINT uq_employee_day UNIQUE (employee_id, day_of_week)
+);
+
 INSERT INTO services (name, description, price, duration_minutes) VALUES 
 ('Corte de Cabello Masculino', 'Corte moderno o clásico con asesoría de imagen y acabado con pomada', 15000, 30),
 ('Corte con Lavado y Peinado', 'Corte de cabello más lavado profundo con masaje capilar y peinado', 20000, 45),
