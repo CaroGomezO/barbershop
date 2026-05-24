@@ -13,4 +13,5 @@ public interface WorkScheduleRepositoryPort {
     boolean existsByEmployeeIdAndDayOfWeek(Long employeeId, DayOfWeek dayOfWeek);
     boolean existsByEmployeeIdAndDayOfWeekAndIdNot(Long employeeId, DayOfWeek dayOfWeek, Long excludeId);
     void deleteById(Long id);
+    Optional<WorkSchedule> findByEmployeeIdAndDayOfWeek(Long employeeId, DayOfWeek dayOfWeek);
 }

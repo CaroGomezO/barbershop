@@ -82,4 +82,11 @@ public class WorkScheduleRepositoryAdapter implements WorkScheduleRepositoryPort
                 .endTime(e.getEndTime())
                 .build();
     }
+
+    @Override
+    public Optional<WorkSchedule> findByEmployeeIdAndDayOfWeek(
+            Long employeeId, DayOfWeek dayOfWeek) {
+        return jpaRepository.findByEmployeeIdAndDayOfWeek(employeeId, dayOfWeek)
+                .map(this::toDomain);
+    }
 }

@@ -2,6 +2,7 @@ package com.example.barbershop.infrastructure.adapter.out.persistence.jpa;
 
 import java.time.DayOfWeek;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -12,6 +13,7 @@ public interface WorkScheduleJpaRepository extends JpaRepository<WorkScheduleEnt
 
     boolean existsByEmployeeIdAndDayOfWeek(Long employeeId, DayOfWeek dayOfWeek);
 
-    boolean existsByEmployeeIdAndDayOfWeekAndIdNot(
-            Long employeeId, DayOfWeek dayOfWeek, Long id);
+    boolean existsByEmployeeIdAndDayOfWeekAndIdNot(Long employeeId, DayOfWeek dayOfWeek, Long id);
+
+    Optional<WorkScheduleEntity> findByEmployeeIdAndDayOfWeek(Long employeeId, DayOfWeek dayOfWeek);
 }
