@@ -54,6 +54,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/appointments/confirm").hasAuthority("ROLE_CLIENTE")
                 .requestMatchers("/api/appointments/cancel").hasAnyAuthority("ROLE_CLIENTE", "ROLE_BARBERO")
                 .requestMatchers("/api/appointments/my").hasAuthority("ROLE_CLIENTE")
+                .requestMatchers("/api/clients/**").authenticated()
                 // All other requests require authentication
                 .anyRequest().authenticated()
             )

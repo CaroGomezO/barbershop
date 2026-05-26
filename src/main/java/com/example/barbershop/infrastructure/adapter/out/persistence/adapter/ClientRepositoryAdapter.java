@@ -47,4 +47,21 @@ public class ClientRepositoryAdapter implements ClientRepositoryPort {
                 .build();
     }
 
+    @Override
+    public Optional<Client> findById(Long clientId) {
+        return jpaRepository.findById(clientId).map(this::toDomain);
+    }
+
+    @Override
+    public Client update(Client client) {
+        ClientEntity entity = jpaRepository.findById(client.getId())
+                .orElseThrow(() -> new IllegalStateException("Cliente no encontrado"));
+
+        if (client.getNames() != null) entity.setNames(client.getNames());
+        if (client.getLastNames() != null) entity.setLastNames(client.getLastNames());
+        if (client.getPhoneNumber() != null) entity.setPhoneNumber(client.getPhoneNumber());
+
+        return toDomain(jpaRepository.save(entity));
+    }
+
 }
