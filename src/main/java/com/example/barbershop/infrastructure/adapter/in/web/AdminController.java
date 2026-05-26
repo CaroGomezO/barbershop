@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -21,11 +22,14 @@ import com.example.barbershop.application.dto.CreateServiceRequest;
 import com.example.barbershop.application.dto.RegisterEmployeeRequest;
 import com.example.barbershop.application.dto.RegisterEmployeeResponse;
 import com.example.barbershop.application.dto.ServiceResponse;
+import com.example.barbershop.application.dto.UpdateEmployeeRequest;
+import com.example.barbershop.application.dto.UpdateEmployeeResponse;
 import com.example.barbershop.application.dto.WorkScheduleRequest;
 import com.example.barbershop.application.dto.WorkScheduleResponse;
 import com.example.barbershop.application.port.in.BarberScheduleUseCase;
 import com.example.barbershop.application.port.in.ManageServicesUseCase;
 import com.example.barbershop.application.port.in.RegisterEmployeeUseCase;
+import com.example.barbershop.application.port.in.UpdateEmployeeUseCase;
 import com.example.barbershop.application.port.in.WorkScheduleUseCase;
 import com.example.barbershop.application.port.out.ServiceRepositoryPort;
 
@@ -41,6 +45,7 @@ public class AdminController {
     private final ManageServicesUseCase manageServicesUseCase;
     private final BarberScheduleUseCase barberScheduleUseCase;
     private final WorkScheduleUseCase workScheduleUseCase;
+    private final UpdateEmployeeUseCase updateEmployeeUseCase;
 
     @PostMapping("/employees")
     public ResponseEntity<RegisterEmployeeResponse> registerEmployee(
@@ -89,5 +94,12 @@ public class AdminController {
     public ResponseEntity<List<WorkScheduleResponse>> getSchedules(
             @PathVariable Long employeeId) {
         return ResponseEntity.ok(workScheduleUseCase.findByEmployee(employeeId));
+    }
+
+    @PatchMapping("/employees/{employeeId}/update")
+    public ResponseEntity<UpdateEmployeeResponse> updateEmployee(
+            @PathVariable Long employeeId,
+            @Valid @RequestBody UpdateEmployeeRequest request) {
+        return ResponseEntity.ok(updateEmployeeUseCase.update(employeeId, request));
     }
 }

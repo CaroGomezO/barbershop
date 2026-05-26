@@ -85,4 +85,21 @@ public class EmployeeRepositoryAdapter implements EmployeeRepositoryPort {
     public Optional<Employee> findById(Long id) {
         return jpaRepository.findById(id).map(this::toDomain);
     }
+
+    @Override
+    public Employee update(Employee employee) {
+        EmployeeEntity entity = jpaRepository.findById(employee.getId())
+                .orElseThrow(() -> new IllegalStateException(
+                        "Empleado no encontrado"));
+
+        entity.setNames(employee.getNames());
+        entity.setLastNames(employee.getLastNames());
+        entity.setPhoneNumber(employee.getPhoneNumber());
+        entity.setAddress(employee.getAddress());
+        entity.setServices(employee.getServices().stream()
+                .map(s -> serviceAdapter.toEntity(s.getId()))
+                .collect(Collectors.toSet()));
+
+        return toDomain(jpaRepository.save(entity));
+    }
 }
