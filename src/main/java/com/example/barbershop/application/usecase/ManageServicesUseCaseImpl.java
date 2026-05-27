@@ -39,6 +39,7 @@ public class ManageServicesUseCaseImpl implements ManageServicesUseCase {
         newService.setDescription(request.getDescription());
         newService.setPrice(request.getPrice());
         newService.setDurationMinutes(request.getDurationMinutes());
+        newService.setActive(true);
 
         com.example.barbershop.domain.model.Service saved = serviceRepository.save(newService);
 
@@ -98,6 +99,7 @@ public class ManageServicesUseCaseImpl implements ManageServicesUseCase {
         response.setDescription(serviceDomain.getDescription());
         response.setPrice(formatPrice(serviceDomain.getPrice()));
         response.setDurationMinutes(serviceDomain.getDurationMinutes());
+        response.setActive(serviceDomain.isActive());
         return response;
     }
 

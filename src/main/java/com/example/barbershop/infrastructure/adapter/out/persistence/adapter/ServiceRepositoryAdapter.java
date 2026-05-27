@@ -86,6 +86,7 @@ public class ServiceRepositoryAdapter implements ServiceRepositoryPort {
                 .description(service.getDescription())
                 .price(service.getPrice())
                 .durationMinutes(service.getDurationMinutes())
+                .isActive(service.isActive())
                 .build();
     }
 

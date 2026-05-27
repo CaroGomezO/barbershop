@@ -223,6 +223,16 @@ public class AppointmentUseCaseImpl implements AppointmentUseCase {
 
                 LocalTime endTime = request.getStartTime().plusMinutes(totalDuration);
 
+                List<com.example.barbershop.domain.model.Availability> availabilities = availabilityRepository.findByEmployeeIdAndDate(request.getEmployeeId(), request.getDate());
+
+                boolean withinAvailability = availabilities.stream().anyMatch(a ->
+                        !request.getStartTime().isBefore(a.getStartTime())
+                        && request.getStartTime().isBefore(a.getEndTime())
+                        && !endTime.isAfter(a.getEndTime()));
+                
+                if (!withinAvailability)
+                        throw new SlotNotAvailableException();
+
                 boolean overlaps = appointmentRepository.existsConfirmedOverlap(
                                 request.getEmployeeId(), request.getDate(),
                                 request.getStartTime(), endTime);
@@ -387,12 +397,16 @@ public class AppointmentUseCaseImpl implements AppointmentUseCase {
                         .map(a -> {
                         AppointmentResponse r = new AppointmentResponse();
                         r.setId(a.getId());
+                        r.setClientName(a.getClient().getNames() + " " + a.getClient().getLastNames());
                         r.setEmployeeName(a.getEmployee().getNames() + " " + a.getEmployee().getLastNames());
                         r.setDate(a.getDate().toString());
                         r.setStartTime(a.getStartTime().toString());
                         r.setEndTime(a.getEndTime().toString());
                         r.setStatus(a.getStatus().name());
                         r.setTotalPrice(a.getTotalPrice().toString());
+                        r.setDurationMinutes(a.getDetails().stream()
+                                        .mapToInt(d -> d.getDurationMinutes())
+                                        .sum());
                         return r;
                         })
                         .collect(Collectors.toList());
