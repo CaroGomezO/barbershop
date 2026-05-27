@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,10 +26,13 @@ import com.example.barbershop.application.dto.CancelAppointmentResponse;
 import com.example.barbershop.application.dto.ConfirmAppointmentRequest;
 import com.example.barbershop.application.dto.ConfirmAppointmentResponse;
 import com.example.barbershop.application.dto.EmployeeAvailabilityResponse;
+import com.example.barbershop.application.dto.ModifyAppointmentRequest;
+import com.example.barbershop.application.dto.ModifyAppointmentResponse;
 import com.example.barbershop.application.dto.ServiceAvailabilityResponse;
 import com.example.barbershop.application.dto.SlotResponse;
 import com.example.barbershop.application.dto.AppointmentResponse;
 import com.example.barbershop.application.port.in.AppointmentUseCase;
+import com.example.barbershop.application.port.in.ModifyAppointmentUseCase;
 import com.example.barbershop.application.port.out.UserRepositoryPort;
 import com.example.barbershop.application.security.UserContext;
 import com.example.barbershop.domain.model.User;
@@ -43,6 +47,7 @@ import lombok.RequiredArgsConstructor;
 public class AppointmentController {
     private final AppointmentUseCase appointmentUseCase;
     private final UserRepositoryPort userRepository;
+    private final ModifyAppointmentUseCase modifyAppointmentUseCase;
 
     @GetMapping("/services")
     public ResponseEntity<List<ServiceAvailabilityResponse>> getServices() {
@@ -111,5 +116,17 @@ public class AppointmentController {
     public ResponseEntity<List<AppointmentResponse>> getMyCitas(Authentication authentication) {
         return ResponseEntity.ok(appointmentUseCase.getMyAppointments(authentication.getName()));
     }
+
+    @PatchMapping("/{appointmentId}/update")
+    public ResponseEntity<ModifyAppointmentResponse> modifyAppointment(
+            @PathVariable Long appointmentId,
+            @Valid @RequestBody ModifyAppointmentRequest request,
+            Authentication authentication) {
+        return ResponseEntity.ok(
+                modifyAppointmentUseCase.modify(
+                        appointmentId,
+                        authentication.getName(),
+                        request));
+}
 
 }

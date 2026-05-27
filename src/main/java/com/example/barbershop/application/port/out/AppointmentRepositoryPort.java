@@ -20,4 +20,7 @@ public interface AppointmentRepositoryPort {
     List<Appointment> findByDateBetween(LocalDate startDate, LocalDate endDate);
     List<Appointment> findByEmployeeId(Long employeeId);
     boolean existsById(Long id);
+
+    boolean existsConfirmedOverlapExcluding(Long employeeId, LocalDate date, LocalTime startTime, LocalTime endTime, Long excludeAppointmentId);
+    Appointment update(Appointment appointment);
 }

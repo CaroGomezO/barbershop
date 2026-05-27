@@ -4,4 +4,8 @@ public class AppointmentNotFoundException extends RuntimeException {
     public AppointmentNotFoundException(Long appointmentId){
         super("La cita con ID " + appointmentId + " no fue encontrada.");
     }
+    
+    public AppointmentNotFoundException() {
+        super("Cita no encontrada");
+    }
 }

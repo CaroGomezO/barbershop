@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.barbershop.application.dto.BarberScheduleResponse;
 import com.example.barbershop.application.dto.CreateServiceRequest;
+import com.example.barbershop.application.dto.DisableServiceResponse;
 import com.example.barbershop.application.dto.RegisterEmployeeRequest;
 import com.example.barbershop.application.dto.RegisterEmployeeResponse;
 import com.example.barbershop.application.dto.ServiceResponse;
@@ -27,6 +28,7 @@ import com.example.barbershop.application.dto.UpdateEmployeeResponse;
 import com.example.barbershop.application.dto.WorkScheduleRequest;
 import com.example.barbershop.application.dto.WorkScheduleResponse;
 import com.example.barbershop.application.port.in.BarberScheduleUseCase;
+import com.example.barbershop.application.port.in.DisableServiceUseCase;
 import com.example.barbershop.application.port.in.ManageServicesUseCase;
 import com.example.barbershop.application.port.in.RegisterEmployeeUseCase;
 import com.example.barbershop.application.port.in.UpdateEmployeeUseCase;
@@ -46,6 +48,7 @@ public class AdminController {
     private final BarberScheduleUseCase barberScheduleUseCase;
     private final WorkScheduleUseCase workScheduleUseCase;
     private final UpdateEmployeeUseCase updateEmployeeUseCase;
+    private final DisableServiceUseCase disableServiceUseCase;
 
     @PostMapping("/employees")
     public ResponseEntity<RegisterEmployeeResponse> registerEmployee(
@@ -101,5 +104,11 @@ public class AdminController {
             @PathVariable Long employeeId,
             @Valid @RequestBody UpdateEmployeeRequest request) {
         return ResponseEntity.ok(updateEmployeeUseCase.update(employeeId, request));
+    }
+
+    @PatchMapping("/services/{serviceId}/disable")
+    public ResponseEntity<DisableServiceResponse> disableService(
+            @PathVariable Long serviceId) {
+        return ResponseEntity.ok(disableServiceUseCase.disable(serviceId));
     }
 }

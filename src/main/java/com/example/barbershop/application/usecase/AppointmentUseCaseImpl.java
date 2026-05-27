@@ -71,7 +71,7 @@ public class AppointmentUseCaseImpl implements AppointmentUseCase {
                 LocalDate from = LocalDate.now();
                 LocalDate to = from.plusDays(MAX_DAYS);
 
-                return serviceRepository.findAll().stream()
+                return serviceRepository.findAllActive().stream()
                                 .map(s -> ServiceAvailabilityResponse.builder()
                                                 .id(s.getId())
                                                 .name(s.getName())
@@ -206,6 +206,12 @@ public class AppointmentUseCaseImpl implements AppointmentUseCase {
         public ConfirmAppointmentResponse confirm(String clientEmail, ConfirmAppointmentRequest request) {
 
                 List<Service> services = serviceRepository.findAllById(request.getServiceIds());
+
+                services.forEach(s -> {
+                        if (!s.isActive()) {
+                                throw new ServiceNotAvailableException();
+                        }
+                });
 
                 if (services.size() != request.getServiceIds().size()) {
                         throw new ServiceNotFoundException(0L);

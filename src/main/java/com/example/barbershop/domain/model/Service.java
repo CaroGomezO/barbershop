@@ -19,4 +19,5 @@ public class Service {
     private String description;
     private BigDecimal price;
     private Integer durationMinutes;
+    private boolean isActive;
 }

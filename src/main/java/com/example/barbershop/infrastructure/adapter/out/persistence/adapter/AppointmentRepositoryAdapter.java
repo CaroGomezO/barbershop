@@ -142,4 +142,36 @@ public class AppointmentRepositoryAdapter implements AppointmentRepositoryPort {
     public boolean existsById(Long id) {
         return jpaRepository.existsById(id);
     }
+
+    @Override
+    public boolean existsConfirmedOverlapExcluding(Long employeeId, LocalDate date, LocalTime startTime, LocalTime endTime, Long excludeAppointmentId) {
+        return jpaRepository.existsConfirmedOverlapExcluding(
+                employeeId, date, startTime, endTime, excludeAppointmentId);
+    }
+
+    @Override
+    public Appointment update(Appointment appointment) {
+AppointmentEntity entity = jpaRepository.findById(appointment.getId())
+                .orElseThrow(() -> new IllegalStateException("Cita no encontrada"));
+
+        entity.setEmployee(employeeAdapter.toEntity(appointment.getEmployee().getId()));
+        entity.setDate(appointment.getDate());
+        entity.setStartTime(appointment.getStartTime());
+        entity.setEndTime(appointment.getEndTime());
+        entity.setTotalPrice(appointment.getTotalPrice());
+        entity.setStatus(appointment.getStatus());
+
+        entity.getDetails().clear();
+        Set<AppointmentDetailEntity> newDetails = appointment.getDetails().stream()
+                .map(d -> AppointmentDetailEntity.builder()
+                        .appointment(entity)
+                        .service(serviceAdapter.toEntity(d.getService().getId()))
+                        .price(d.getPrice())
+                        .durationMinutes(d.getDurationMinutes())
+                        .build())
+                .collect(Collectors.toSet());
+        entity.getDetails().addAll(newDetails);
+
+        return toDomain(jpaRepository.save(entity));
+    }
 }

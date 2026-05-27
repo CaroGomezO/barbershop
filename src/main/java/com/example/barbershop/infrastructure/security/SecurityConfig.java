@@ -52,6 +52,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMINISTRADOR")
                 .requestMatchers("/api/employee/**").hasAuthority("ROLE_BARBERO")
                 .requestMatchers("/api/appointments/confirm").hasAuthority("ROLE_CLIENTE")
+                .requestMatchers("/api/appointments/{appointmentId}/update").hasRole("CLIENTE")
                 .requestMatchers("/api/appointments/cancel").hasAnyAuthority("ROLE_CLIENTE", "ROLE_BARBERO")
                 .requestMatchers("/api/appointments/my").hasAuthority("ROLE_CLIENTE")
                 .requestMatchers("/api/clients/**").authenticated()

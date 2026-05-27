@@ -52,7 +52,8 @@ CREATE TABLE services (
     name VARCHAR(150) NOT NULL,
     description TEXT,
     price NUMERIC(10,2) NOT NULL,
-    duration_minutes INT NOT NULL CHECK (duration_minutes > 0)
+    duration_minutes INT NOT NULL CHECK (duration_minutes > 0),
+    is_active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 -- Servicios por empleado

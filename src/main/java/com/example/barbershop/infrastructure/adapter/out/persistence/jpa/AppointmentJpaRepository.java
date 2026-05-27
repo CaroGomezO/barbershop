@@ -57,4 +57,23 @@ public interface AppointmentJpaRepository extends JpaRepository<AppointmentEntit
     List<AppointmentEntity> findByDateBetween(LocalDate startDate, LocalDate endDate);
 
     List<AppointmentEntity> findByEmployeeId(Long employeeId);
+
+    @Query("""
+        SELECT COUNT(a) > 0
+        FROM AppointmentEntity a
+        WHERE a.employee.id = :employeeId
+        AND a.date = :date
+        AND a.status = 'CONFIRMADA'
+        AND a.startTime < :endTime
+        AND a.endTime > :startTime
+        AND a.id <> :excludeId
+    """)
+    
+    boolean existsConfirmedOverlapExcluding(
+            @Param("employeeId") Long employeeId,
+            @Param("date") LocalDate date,
+            @Param("startTime") LocalTime startTime,
+            @Param("endTime") LocalTime endTime,
+            @Param("excludeId") Long excludeId
+    );
 }

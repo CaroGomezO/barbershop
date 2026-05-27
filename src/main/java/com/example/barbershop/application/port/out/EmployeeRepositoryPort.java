@@ -13,4 +13,6 @@ public interface EmployeeRepositoryPort {
     List<Employee> findActiveEmployeesByServiceWithAvailability(Long serviceId, LocalDate from, LocalDate to);
     Optional<Employee> findById(Long id);
     Employee update(Employee employee);
+    boolean hasService(Long employeeId, Long serviceId);
+
 }

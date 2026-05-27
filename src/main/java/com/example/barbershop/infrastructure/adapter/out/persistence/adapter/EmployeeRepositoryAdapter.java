@@ -102,4 +102,12 @@ public class EmployeeRepositoryAdapter implements EmployeeRepositoryPort {
 
         return toDomain(jpaRepository.save(entity));
     }
+
+    @Override
+    public boolean hasService(Long employeeId, Long serviceId) {
+        return jpaRepository.findById(employeeId)
+                .map(employee -> employee.getServices().stream()
+                        .anyMatch(service -> service.getId().equals(serviceId)))
+                .orElse(false);
+    }
 }

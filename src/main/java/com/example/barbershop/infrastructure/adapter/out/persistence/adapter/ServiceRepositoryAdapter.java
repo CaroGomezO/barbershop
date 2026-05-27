@@ -73,6 +73,7 @@ public class ServiceRepositoryAdapter implements ServiceRepositoryPort {
                 .description(entity.getDescription())
                 .price(entity.getPrice())
                 .durationMinutes(entity.getDurationMinutes())
+                .isActive(entity.isActive())
                 .build();
     }
 
@@ -91,5 +92,25 @@ public class ServiceRepositoryAdapter implements ServiceRepositoryPort {
     public ServiceEntity toEntity(Long id) {
         return jpaRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Servicio no encontrado: " + id));
+    }
+
+    @Override
+    public List<Service> findAllActive() {
+        return jpaRepository.findByIsActiveTrue().stream()
+                .map(this::toDomain).collect(Collectors.toList());
+    }
+
+    @Override
+    public Service update(Service service) {
+        ServiceEntity entity = jpaRepository.findById(service.getId())
+                .orElseThrow(() -> new IllegalStateException(
+                        "Servicio no encontrado"));
+        entity.setActive(service.isActive());
+        return toDomain(jpaRepository.save(entity));
+    }
+
+    @Override
+    public long countActiveAppointmentsByServiceId(Long serviceId) {
+        return jpaRepository.countActiveAppointmentsByServiceId(serviceId);
     }
 }
