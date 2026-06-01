@@ -14,5 +14,6 @@ public interface EmployeeRepositoryPort {
     Optional<Employee> findById(Long id);
     Employee update(Employee employee);
     boolean hasService(Long employeeId, Long serviceId);
+    List<Employee> findAll();
 
 }

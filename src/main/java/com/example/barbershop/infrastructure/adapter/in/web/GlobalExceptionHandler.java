@@ -11,22 +11,29 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.example.barbershop.domain.exception.AppointmentAlreadyCancelledException;
 import com.example.barbershop.domain.exception.AppointmentNotFoundException;
+import com.example.barbershop.domain.exception.AppointmentNotModifiableException;
 import com.example.barbershop.domain.exception.AppointmentNotOwnedByUserException;
 import com.example.barbershop.domain.exception.BarberCancellationReasonNotProvidedException;
 import com.example.barbershop.domain.exception.CancellationLimitExceededException;
+import com.example.barbershop.domain.exception.ClientNotFoundException;
 import com.example.barbershop.domain.exception.DocumentAlreadyExistsException;
+import com.example.barbershop.domain.exception.DuplicateResourceException;
 import com.example.barbershop.domain.exception.EmailAlreadyExistsException;
 import com.example.barbershop.domain.exception.EmployeeNotFoundException;
 import com.example.barbershop.domain.exception.InvalidCredentialsException;
 import com.example.barbershop.domain.exception.InvalidScheduleException;
+import com.example.barbershop.domain.exception.OverlappingScheduleException;
 import com.example.barbershop.domain.exception.PasswordMismatchException;
 import com.example.barbershop.domain.exception.SamePasswordException;
 import com.example.barbershop.domain.exception.ServiceNotAvailableException;
 import com.example.barbershop.domain.exception.ServiceNotFoundException;
 import com.example.barbershop.domain.exception.SlotNotAvailableException;
+import com.example.barbershop.domain.exception.UnauthorizedAccessException;
+import com.example.barbershop.domain.exception.WorkScheduleNotFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<Map<String, String>> handleInvalidCredentials(
             InvalidCredentialsException ex) {
@@ -34,11 +41,20 @@ public class GlobalExceptionHandler {
                 .body(Map.of("error", ex.getMessage()));
     }
 
+    @ExceptionHandler(UnauthorizedAccessException.class)
+    public ResponseEntity<Map<String, String>> handleUnauthorized(
+            UnauthorizedAccessException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("error", ex.getMessage()));
+    }
+
     @ExceptionHandler({EmailAlreadyExistsException.class,
                        DocumentAlreadyExistsException.class,
+                       DuplicateResourceException.class,
                        SlotNotAvailableException.class,
                        ServiceNotAvailableException.class,
-                        AppointmentAlreadyCancelledException.class})
+                       AppointmentAlreadyCancelledException.class,
+                       OverlappingScheduleException.class})
     public ResponseEntity<Map<String, String>> handleConflict(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("error", ex.getMessage()));
@@ -47,17 +63,20 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({PasswordMismatchException.class,
                        SamePasswordException.class,
                        InvalidScheduleException.class,
-                        CancellationLimitExceededException.class,
-                        AppointmentNotOwnedByUserException.class,
-                        BarberCancellationReasonNotProvidedException.class})
+                       CancellationLimitExceededException.class,
+                       AppointmentNotOwnedByUserException.class,
+                       AppointmentNotModifiableException.class,
+                       BarberCancellationReasonNotProvidedException.class})
     public ResponseEntity<Map<String, String>> handleBadRequest(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("error", ex.getMessage()));
     }
 
     @ExceptionHandler({ServiceNotFoundException.class,
-                        EmployeeNotFoundException.class,
-                        AppointmentNotFoundException.class})
+                       EmployeeNotFoundException.class,
+                       AppointmentNotFoundException.class,
+                       WorkScheduleNotFoundException.class,
+                       ClientNotFoundException.class})
     public ResponseEntity<Map<String, String>> handleNotFound(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("error", ex.getMessage()));

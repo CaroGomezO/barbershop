@@ -86,4 +86,25 @@ public class RegisterEmployeeUseCaseImpl implements RegisterEmployeeUseCase {
                         .collect(Collectors.toList()))
                 .build();
     }
+
+        @Override
+        public List<RegisterEmployeeResponse> getAll() {
+        return employeeRepository.findAll()
+                .stream()
+                .map(e -> RegisterEmployeeResponse.builder()
+                        .employeeId(e.getId())
+                        .names(e.getNames())
+                        .lastNames(e.getLastNames())
+                        .email(e.getUser() != null ? e.getUser().getEmail() : null)
+                        .documentNumber(e.getDocumentNumber())
+                        .address(e.getAddress())
+                        .isActive(e.isActive())
+                        .services(e.getServices() != null
+                                ? e.getServices().stream()
+                                        .map(s -> s.getName())
+                                        .collect(Collectors.toList())
+                                : List.of())
+                        .build())
+                .collect(Collectors.toList());
+        }
 }

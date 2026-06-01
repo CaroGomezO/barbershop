@@ -8,4 +8,5 @@ import com.example.barbershop.infrastructure.adapter.out.persistence.entity.Clie
 
 public interface ClientJpaRepository extends JpaRepository<ClientEntity, Long> {
     Optional<ClientEntity> findByUserEmail(String email);
+    boolean existsByPhoneNumberAndIdNot(String phoneNumber, Long id);
 }

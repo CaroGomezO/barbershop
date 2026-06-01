@@ -110,4 +110,11 @@ public class EmployeeRepositoryAdapter implements EmployeeRepositoryPort {
                         .anyMatch(service -> service.getId().equals(serviceId)))
                 .orElse(false);
     }
+    @Override
+    public List<Employee> findAll() {
+      return jpaRepository.findAll()
+            .stream()
+            .map(this::toDomain)
+            .collect(Collectors.toList());
+}
 }

@@ -14,8 +14,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
@@ -36,53 +37,55 @@ public class JwtFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain chain)
             throws ServletException, IOException {
+        try {
+            String path = request.getRequestURI();
+            String authHeader = request.getHeader("Authorization");
 
-        String path = request.getRequestURI();
-        String authHeader = request.getHeader("Authorization");
+            if (path.equals("/api/auth/login") || path.equals("/api/auth/register")) {
+                chain.doFilter(request, response);
+                return;
+            }
 
-        // Rutas públicas que no necesitan token
-        if (path.equals("/api/auth/login") || path.equals("/api/auth/register")) {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                chain.doFilter(request, response);
+                return;
+            }
+
+            String token = authHeader.substring(7);
+
+            if (!jwtService.isTokenValid(token)) {
+                chain.doFilter(request, response);
+                return;
+            }
+
+            boolean isPasswordTemporary = jwtService.extractIsPasswordTemporary(token);
+
+            if (isPasswordTemporary && !path.equals("/api/auth/change-password")) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write(
+                        "{\"error\":\"Debes cambiar tu contraseña antes de continuar\"}"
+                );
+                response.getWriter().flush();
+                return;
+            }
+
+            String email = jwtService.extractEmail(token);
+
+            if (email != null && SecurityContextHolder.getContext()
+                    .getAuthentication() == null) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                UsernamePasswordAuthenticationToken auth =
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
+                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            }
+
             chain.doFilter(request, response);
-            return;
+        } catch (Exception e) {
+            log.error("Error en JwtFilter: {}", e.getMessage(), e);
+            throw e;
         }
-
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            chain.doFilter(request, response);
-            return;
-        }
-
-        String token = authHeader.substring(7);
-
-        if (!jwtService.isTokenValid(token)) {
-            chain.doFilter(request, response);
-            return;
-        }
-
-        boolean isPasswordTemporary = jwtService.extractIsPasswordTemporary(token);
-
-        // change-password es el único endpoint permitido con contraseña temporal
-        if (isPasswordTemporary && !path.equals("/api/auth/change-password")) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write(
-                    "{\"error\":\"Debes cambiar tu contraseña antes de continuar\"}"
-            );
-            response.getWriter().flush();
-            return;
-        }
-
-        String email = jwtService.extractEmail(token);
-
-        if (email != null && SecurityContextHolder.getContext()
-                .getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-            UsernamePasswordAuthenticationToken auth =
-                    new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
-            auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(auth);
-        }
-
-        chain.doFilter(request, response);
     }
 }
