@@ -15,21 +15,19 @@ public interface EmployeeJpaRepository extends JpaRepository<EmployeeEntity, Lon
 
     boolean existsByDocumentNumber(String documentNumber);
 
-    @Query("""
-        SELECT DISTINCT e FROM EmployeeEntity e
-        JOIN e.services s
-        WHERE s.id = :serviceId
-          AND e.isActive = true
-          AND EXISTS (
-              SELECT a FROM AvailabilityEntity a
-              WHERE a.employee.id = e.id
-                AND a.date > :from
-                AND a.date <= :to
-          )
-    """)
-    List<EmployeeEntity> findActiveByServiceWithAvailability(
-            @Param("serviceId") Long serviceId,
-            @Param("from") LocalDate from,
-            @Param("to") LocalDate to
-    );
+        @Query("""
+            SELECT DISTINCT e FROM EmployeeEntity e
+            JOIN e.services s
+            WHERE s.id = :serviceId
+            AND e.isActive = true
+            AND EXISTS (
+                SELECT w FROM WorkScheduleEntity w
+                WHERE w.employee.id = e.id
+            )
+        """)
+        List<EmployeeEntity> findActiveByServiceWithAvailability(
+                @Param("serviceId") Long serviceId,
+                @Param("from") LocalDate from,
+                @Param("to") LocalDate to
+        );
 }

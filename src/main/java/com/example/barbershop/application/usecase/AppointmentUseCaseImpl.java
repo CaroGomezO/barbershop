@@ -391,7 +391,7 @@ public class AppointmentUseCaseImpl implements AppointmentUseCase {
                                 .build();
         }
 
-       @Override
+        @Override
         public List<AppointmentResponse> getMyAppointments(String email) {
                 return appointmentRepository.findByClientEmail(email).stream()
                         .map(a -> {
@@ -399,14 +399,18 @@ public class AppointmentUseCaseImpl implements AppointmentUseCase {
                         r.setId(a.getId());
                         r.setClientName(a.getClient().getNames() + " " + a.getClient().getLastNames());
                         r.setEmployeeName(a.getEmployee().getNames() + " " + a.getEmployee().getLastNames());
+                        r.setEmployeeId(a.getEmployee().getId());
                         r.setDate(a.getDate().toString());
                         r.setStartTime(a.getStartTime().toString());
                         r.setEndTime(a.getEndTime().toString());
                         r.setStatus(a.getStatus().name());
                         r.setTotalPrice(a.getTotalPrice().toString());
                         r.setDurationMinutes(a.getDetails().stream()
-                                        .mapToInt(d -> d.getDurationMinutes())
-                                        .sum());
+                                .mapToInt(d -> d.getDurationMinutes())
+                                .sum());
+                        r.setServiceIds(a.getDetails().stream()
+                                .map(d -> d.getService().getId())
+                                .collect(Collectors.toList()));
                         return r;
                         })
                         .collect(Collectors.toList());

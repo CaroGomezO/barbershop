@@ -10,4 +10,5 @@ public class LoginResponse {
     private String role;
     private String names;
     private boolean isPasswordTemporary;
+    private Long clienteId;
 }

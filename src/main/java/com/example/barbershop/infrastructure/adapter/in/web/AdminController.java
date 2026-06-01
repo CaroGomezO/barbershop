@@ -23,12 +23,14 @@ import com.example.barbershop.application.dto.DisableServiceResponse;
 import com.example.barbershop.application.dto.RegisterEmployeeRequest;
 import com.example.barbershop.application.dto.RegisterEmployeeResponse;
 import com.example.barbershop.application.dto.ServiceResponse;
+import com.example.barbershop.application.dto.UpdateClientResponse;
 import com.example.barbershop.application.dto.UpdateEmployeeRequest;
 import com.example.barbershop.application.dto.UpdateEmployeeResponse;
 import com.example.barbershop.application.dto.WorkScheduleRequest;
 import com.example.barbershop.application.dto.WorkScheduleResponse;
 import com.example.barbershop.application.port.in.BarberScheduleUseCase;
 import com.example.barbershop.application.port.in.DisableServiceUseCase;
+import com.example.barbershop.application.port.in.GetAllClientsUseCase;
 import com.example.barbershop.application.port.in.ManageServicesUseCase;
 import com.example.barbershop.application.port.in.RegisterEmployeeUseCase;
 import com.example.barbershop.application.port.in.UpdateEmployeeUseCase;
@@ -49,6 +51,7 @@ public class AdminController {
     private final WorkScheduleUseCase workScheduleUseCase;
     private final UpdateEmployeeUseCase updateEmployeeUseCase;
     private final DisableServiceUseCase disableServiceUseCase;
+    private final GetAllClientsUseCase getAllClientsUseCase;
 
     @PostMapping("/employees")
     public ResponseEntity<RegisterEmployeeResponse> registerEmployee(
@@ -64,7 +67,7 @@ public class AdminController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
         return ResponseEntity.ok(barberScheduleUseCase.getBarberSchedule(employeeId, from, to));
     }
-    
+
     @PostMapping("/services")
     public ResponseEntity<ServiceResponse> createService(
             @Valid @RequestBody CreateServiceRequest request) {
@@ -110,5 +113,15 @@ public class AdminController {
     public ResponseEntity<DisableServiceResponse> disableService(
             @PathVariable Long serviceId) {
         return ResponseEntity.ok(disableServiceUseCase.disable(serviceId));
+    }
+
+    @GetMapping("/employees")
+    public ResponseEntity<List<RegisterEmployeeResponse>> getAllEmployees() {
+        return ResponseEntity.ok(registerEmployeeUseCase.getAll());
+    }
+
+    @GetMapping("/clients")
+    public ResponseEntity<List<UpdateClientResponse>> getAllClients() {
+        return ResponseEntity.ok(getAllClientsUseCase.getAll());
     }
 }

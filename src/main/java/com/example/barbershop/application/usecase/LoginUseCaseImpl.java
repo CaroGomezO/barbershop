@@ -10,6 +10,7 @@ import com.example.barbershop.application.port.out.ClientRepositoryPort;
 import com.example.barbershop.application.port.out.EmployeeRepositoryPort;
 import com.example.barbershop.application.port.out.UserRepositoryPort;
 import com.example.barbershop.domain.exception.InvalidCredentialsException;
+import com.example.barbershop.domain.model.Client;
 import com.example.barbershop.domain.model.Role;
 import com.example.barbershop.domain.model.User;
 import com.example.barbershop.infrastructure.security.JwtService;
@@ -27,22 +28,29 @@ public class LoginUseCaseImpl implements LoginUseCase {
 
     @Override
     public LoginResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(InvalidCredentialsException::new);
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(InvalidCredentialsException::new);
 
         if (!passwordEncoder.matches(request.getPassword(), user.getHashPassword())) {
             throw new InvalidCredentialsException();
         }
 
-        // Obtener nombre según rol
         String names = resolveName(user);
-
         String token = jwtService.generateToken(user);
+
+        Long clienteId = null;
+        if (user.getRole() == Role.CLIENTE) {
+            clienteId = clientRepository.findByUserEmail(user.getEmail())
+                    .map(Client::getId)
+                    .orElse(null);
+        }
 
         return LoginResponse.builder()
                 .token(token)
                 .role(user.getRole().name())
                 .names(names)
                 .isPasswordTemporary(user.isPasswordTemporary())
+                .clienteId(clienteId)
                 .build();
     }
 
@@ -57,5 +65,4 @@ public class LoginUseCaseImpl implements LoginUseCase {
                 .map(e -> e.getNames())
                 .orElse(user.getEmail());
     }
-
 }
